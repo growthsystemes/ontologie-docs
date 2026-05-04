@@ -67,6 +67,21 @@ Every mutation follows the same loop:
 5. **Inspect / verify** the signed plan
 6. **Apply** the verified plan with an idempotency key
 
+```mermaid
+flowchart LR
+  Discover["1. Discover"] --> Query["2. Query"]
+  Query --> Describe["3. Describe"]
+  Describe --> DryRun["4. Dry-run"]
+  DryRun --> Inspect["5. Inspect"]
+  Inspect --> Verify["6. Verify"]
+  Verify --> Apply["7. Apply"]
+  Apply --> Audit["8. Audit"]
+
+  DryRun -. "no mutation" .-> Preview(["Preview only"])
+  Verify -. "rejects stale, expired,<br/>or policy-mismatched plans" .-> Reject(["Blocked"])
+  Apply -. "atomic update" .-> Twin(["Twin updated"])
+```
+
 At apply time, the runtime verifies actor, workspace, action, inputs, object versions, schema version, policy version, expiry, and idempotency before writing anything.
 
 ---
@@ -128,11 +143,90 @@ Works with Claude Code, Codex, any MCP client, and regular CLI/CI workflows.
 
 ---
 
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Agent["Agent and developer surfaces"]
+    A["AI Agent<br/>Claude Code · Codex · MCP client"]
+    CLI["dataforge CLI"]
+    SDK["TypeScript SDK"]
+    MCP["MCP Adapter"]
+  end
+
+  subgraph Runtime["Ontologie governed runtime"]
+    Contract["Public contract<br/>schema · actions · capabilities"]
+    Guard["Policy · RBAC<br/>scopes · mutableBy"]
+    Plan["Dry-run → signed plan"]
+    Verify["Server-side verification"]
+    Apply["Verified apply"]
+    Twin["Operational twin"]
+    Audit["Append-only audit"]
+  end
+
+  subgraph Systems["Your systems"]
+    DB[("Database")]
+    Workflow["Workflow engine"]
+    External["External systems"]
+  end
+
+  A --> CLI
+  A --> SDK
+  A --> MCP
+
+  CLI --> Contract
+  SDK --> Contract
+  MCP --> Contract
+
+  Contract --> Guard
+  Guard --> Plan
+  Plan --> Verify
+  Verify --> Apply
+  Apply --> Twin
+  Apply --> Audit
+
+  Twin -. "controlled sync" .-> DB
+  Apply -. "workflow_handoff" .-> Workflow
+  Apply -. "external_commit" .-> External
+
+  A -. "no raw access" .-> DB
+  A -. "no implicit writes" .-> External
+```
+
+---
+
 ## Local vs Cloud
 
 **Local** is free and accountless: schema authoring, code generation, mock queries, mock dry-runs, and agent instruction files.
 
 **Ontologie Cloud** adds persistent state, signed plans (Ed25519), policy enforcement, audit, quotas, team governance, and production execution.
+
+```mermaid
+flowchart LR
+  Dev["Developer"] --> Local["Local mode<br/>dataforge dev"]
+  Dev --> Cloud["Ontologie Cloud"]
+
+  subgraph L["Local — free, no account"]
+    Local --> L1["Schema design"]
+    Local --> L2["Type generation"]
+    Local --> L3["Mock queries"]
+    Local --> L4["Mock dry-runs"]
+    Local --> L5["Agent files"]
+    Local --> L6["Unsigned mock plans"]
+  end
+
+  subgraph C["Cloud — Sandbox / Runtime / Governance"]
+    Cloud --> C1["Persistent operational twin"]
+    Cloud --> C2["Ed25519 signed plans"]
+    Cloud --> C3["Server-side policy enforcement"]
+    Cloud --> C4["Audit trail"]
+    Cloud --> C5["DFU metering and budget caps"]
+    Cloud --> C6["Team governance"]
+  end
+
+  Local -. "no durable state" .-> Mock(["Mock runtime"])
+  Cloud -. "governed and audited" .-> Prod(["Managed runtime"])
+```
 
 See [Local vs Cloud](docs/local-vs-cloud.md) for a detailed comparison.
 
