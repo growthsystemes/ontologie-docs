@@ -68,18 +68,19 @@ Every mutation follows the same loop:
 6. **Apply** the verified plan with an idempotency key
 
 ```mermaid
-flowchart LR
-  Discover["1. Discover"] --> Query["2. Query"]
-  Query --> Describe["3. Describe"]
-  Describe --> DryRun["4. Dry-run"]
-  DryRun --> Inspect["5. Inspect"]
-  Inspect --> Verify["6. Verify"]
-  Verify --> Apply["7. Apply"]
-  Apply --> Audit["8. Audit"]
+stateDiagram-v2
+  [*] --> Discover
+  Discover --> Query
+  Query --> Describe
+  Describe --> DryRun: preview mutation
+  DryRun --> Inspect
+  Inspect --> Verify
+  Verify --> Apply: idempotency key
+  Apply --> Audit
+  Audit --> [*]
 
-  DryRun -. "no mutation" .-> Preview(["Preview only"])
-  Verify -. "rejects stale or invalid plans" .-> Reject(["Blocked"])
-  Apply -. "atomic update" .-> Twin(["Twin updated"])
+  DryRun --> [*]: no mutation, preview only
+  Verify --> [*]: rejects stale or invalid plans
 ```
 
 At apply time, the runtime verifies actor, workspace, action, inputs, object versions, schema version, policy version, expiry, and idempotency before writing anything.
