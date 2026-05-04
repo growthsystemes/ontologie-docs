@@ -78,7 +78,7 @@ flowchart LR
   Apply --> Audit["8. Audit"]
 
   DryRun -. "no mutation" .-> Preview(["Preview only"])
-  Verify -. "rejects stale, expired,<br/>or policy-mismatched plans" .-> Reject(["Blocked"])
+  Verify -. "rejects stale or invalid plans" .-> Reject(["Blocked"])
   Apply -. "atomic update" .-> Twin(["Twin updated"])
 ```
 
@@ -148,16 +148,16 @@ Works with Claude Code, Codex, any MCP client, and regular CLI/CI workflows.
 ```mermaid
 flowchart LR
   subgraph Agent["Agent and developer surfaces"]
-    A["AI Agent<br/>Claude Code · Codex · MCP client"]
+    A["AI Agent"]
     CLI["dataforge CLI"]
     SDK["TypeScript SDK"]
     MCP["MCP Adapter"]
   end
 
   subgraph Runtime["Ontologie governed runtime"]
-    Contract["Public contract<br/>schema · actions · capabilities"]
-    Guard["Policy · RBAC<br/>scopes · mutableBy"]
-    Plan["Dry-run → signed plan"]
+    Contract["Public contract"]
+    Guard["Policy + RBAC"]
+    Plan["Dry-run + signed plan"]
     Verify["Server-side verification"]
     Apply["Verified apply"]
     Twin["Operational twin"]
@@ -203,7 +203,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  Dev["Developer"] --> Local["Local mode<br/>dataforge dev"]
+  Dev["Developer"] --> Local["Local mode"]
   Dev --> Cloud["Ontologie Cloud"]
 
   subgraph L["Local — free, no account"]
