@@ -544,3 +544,7 @@ npm install @dataforge/mcp
 MIT for public SDK and CLI packages.
 
 Ontologie Cloud is a managed commercial service.
+
+---
+
+Built by [Growthsystemes](https://www.growthsystemes.com/) -- Quentin Gavila & Benoit Ferrere.
