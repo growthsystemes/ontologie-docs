@@ -6,7 +6,27 @@ Ontologie lets AI agents safely understand, query and change business data witho
 
 You define your business model as typed objects, links and bounded actions. Agents discover the model, query the live graph, dry-run mutations, inspect signed plans and apply only verified plans through a deterministic CLI and SDK.
 
-> Ontologie is the product. The CLI and npm packages are published under the `dataforge` namespace.
+Works with Claude Code, Codex, any MCP client, and regular CLI/CI workflows.
+
+---
+
+- [How Ontologie works](#how-ontologie-works)
+- [Why Ontologie](#why-ontologie)
+- [The safety loop](#the-safety-loop)
+- [Example: contract approval](#example-contract-approval)
+- [Quick demo](#quick-demo-local)
+- [CLI and SDK](#cli-and-sdk)
+- [Agent integrations](#agent-integrations)
+- [Surfaces](#surfaces)
+- [Architecture](#architecture)
+- [Local vs Cloud](#local-vs-cloud)
+- [Security model](#security-model)
+- [Pricing](#pricing)
+- [Templates](#templates)
+- [Who is this for](#who-is-this-for)
+- [What Ontologie is NOT](#what-ontologie-is-not)
+- [Install](#install)
+- [Read next](#read-next)
 
 ---
 
@@ -287,6 +307,8 @@ await client.actions.applyPlan(plan.id, {
 
 ## Agent integrations
 
+Ontologie is designed to be the business layer for coding agents. Claude Code and Codex connect through the CLI and MCP adapter. Any tool that can run shell commands or speak MCP can use the full safety loop.
+
 ### Context Pack
 
 Generate a compact, agent-readable summary of the workspace:
@@ -308,7 +330,7 @@ The Context Pack uses three trust levels: `systemTrusted` (schema, policy, safet
 dataforge agent init --target all
 ```
 
-Generates `AGENTS.md`, `CLAUDE.md`, `.claude/skills/dataforge/SKILL.md`, `.codex/config.toml.example` and `.llms/dataforge.md`. These files give agents the commands and safety rules they need without reading your entire codebase.
+Generates `AGENTS.md`, `CLAUDE.md`, `.claude/skills/dataforge/SKILL.md`, `.codex/config.toml.example` and `.llms/dataforge.md`. Drop these into your repo and Claude Code, Codex or any compatible agent immediately knows how to discover, query, plan and apply.
 
 ### Capabilities manifest
 
