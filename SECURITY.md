@@ -1,17 +1,5 @@
 # Security
 
-## Reporting vulnerabilities
-
-If you discover a security vulnerability in Ontologie (CLI, SDK, MCP adapter, or Cloud), please report it responsibly:
-
-**Email:** security@ontologie-growthsystemes.com
-
-Do not open a public GitHub issue for security vulnerabilities.
-
-We will acknowledge receipt within 48 hours and provide an initial assessment within 5 business days.
-
----
-
 ## Security model summary
 
 Ontologie enforces safety at the runtime layer, not through prompt instructions.
