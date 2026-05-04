@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ontologie-growthsystemes.com/schemas/mcp-tools.schema.json",
+  "title": "MCP Tool Catalog",
+  "description": "Schema for the Ontologie MCP adapter tool catalog (Preview)",
+  "type": "object",
+  "required": ["tools", "version"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "MCP adapter version"
+    },
+    "stability": {
+      "type": "string",
+      "const": "preview",
+      "description": "MCP is Preview stability"
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "permission", "inputSchema"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^ontology_",
+            "description": "Tool name (ontology_* prefix)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable tool description"
+          },
+          "permission": {
+            "type": "string",
+            "enum": ["read", "dry-run", "write"],
+            "description": "Required permission level"
+          },
+          "cliEquivalent": {
+            "type": "string",
+            "description": "Equivalent CLI command"
+          },
+          "inputSchema": {
+            "type": "object",
+            "description": "JSON Schema for tool inputs"
+          },
+          "outputSchema": {
+            "type": "object",
+            "description": "JSON Schema for tool outputs (follows CLI envelope)"
+          },
+          "costRange": {
+            "type": "object",
+            "properties": {
+              "minDfu": { "type": "number" },
+              "maxDfu": { "type": "number" }
+            },
+            "description": "Indicative DFU cost range"
+          }
+        }
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Permission level descriptions",
+      "properties": {
+        "read": {
+          "type": "string",
+          "const": "Schema describe, queries, search, graph, context pack, capabilities"
+        },
+        "dry-run": {
+          "type": "string",
+          "const": "Action dry-runs, import dry-runs, plan inspect/verify"
+        },
+        "write": {
+          "type": "string",
+          "const": "Apply plans, schema push, import apply (explicit opt-in required)"
+        }
+      }
+    }
+  }
+}

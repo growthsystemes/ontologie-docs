@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ontologie-growthsystemes.com/schemas/capabilities.schema.json",
+  "title": "Capabilities Manifest",
+  "description": "Machine-readable contract output by `dataforge capabilities export --format json`",
+  "type": "object",
+  "required": ["version", "workspace", "objectTypes", "actions", "linkTypes", "limits", "policy"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "description": "Manifest version (increments on schema push)"
+    },
+    "workspace": {
+      "type": "object",
+      "required": ["id", "name", "tier"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "tier": { "type": "string", "enum": ["sandbox", "runtime", "governance", "enterprise"] }
+      }
+    },
+    "objectTypes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "apiName", "properties"],
+        "properties": {
+          "name": { "type": "string" },
+          "apiName": { "type": "string" },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type", "required"],
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "required": { "type": "boolean" },
+                "indexed": { "type": "boolean" },
+                "mutableBy": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          },
+          "actions": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "objectType", "executionMode", "riskLevel"],
+        "properties": {
+          "key": { "type": "string" },
+          "objectType": { "type": "string" },
+          "executionMode": { "type": "string" },
+          "riskLevel": { "type": "string", "enum": ["low", "medium", "high"] },
+          "inputs": { "type": "object" },
+          "preconditions": { "type": "array", "items": { "type": "string" } },
+          "requiredRole": { "type": "string" }
+        }
+      }
+    },
+    "linkTypes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "source", "target", "cardinality"],
+        "properties": {
+          "name": { "type": "string" },
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "cardinality": { "type": "string", "enum": ["one_to_one", "one_to_many", "many_to_one", "many_to_many"] }
+        }
+      }
+    },
+    "enums": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "values"],
+        "properties": {
+          "name": { "type": "string" },
+          "values": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "type": "object",
+          "properties": {
+            "maxObjects": { "type": "integer" },
+            "maxLinkedWrites": { "type": "integer" },
+            "maxInputSize": { "type": "string" },
+            "retention": { "type": "string" }
+          }
+        },
+        "query": {
+          "type": "object",
+          "properties": {
+            "maxLimit": { "type": "integer" },
+            "defaultLimit": { "type": "integer" },
+            "maxOffset": { "type": "integer" }
+          }
+        },
+        "graph": {
+          "type": "object",
+          "properties": {
+            "neighborsMaxDepth": { "type": "integer" },
+            "traverseMaxDepth": { "type": "integer" },
+            "maxResults": { "type": "integer" }
+          }
+        },
+        "rate": {
+          "type": "object",
+          "properties": {
+            "requestsPerHour": { "type": "integer" },
+            "burstPerSecond": { "type": "integer" }
+          }
+        },
+        "budget": {
+          "type": "object",
+          "properties": {
+            "monthlyDfu": { "type": "integer" },
+            "perCommandDfu": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "defaultMode": { "type": "string", "enum": ["read_only", "dry_run", "live"] },
+        "requireDryRunBeforeMutation": { "type": "boolean" },
+        "requireIdempotencyKey": { "type": "boolean" },
+        "forbidDelete": { "type": "boolean" },
+        "allowedActions": { "type": "array", "items": { "type": "string" } },
+        "maxObjectsTouched": { "type": "integer" },
+        "maxCostUnitsPerCommand": { "type": "integer" }
+      }
+    },
+    "search": {
+      "type": "object",
+      "properties": {
+        "keyword": { "type": "boolean" },
+        "semantic": { "type": "boolean" }
+      }
+    }
+  }
+}

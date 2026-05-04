@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ontologie-growthsystemes.com/schemas/cli-envelope.schema.json",
+  "title": "CLI JSON Envelope",
+  "description": "Standard response envelope for all Ontologie CLI commands with --format json",
+  "type": "object",
+  "required": ["ok", "data", "error", "page", "meta"],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "description": "Whether the command succeeded"
+    },
+    "data": {
+      "description": "Response payload on success. Null on error.",
+      "oneOf": [
+        { "type": "object" },
+        { "type": "array" },
+        { "type": "null" }
+      ]
+    },
+    "error": {
+      "oneOf": [
+        { "$ref": "#/$defs/ErrorObject" },
+        { "type": "null" }
+      ]
+    },
+    "page": {
+      "oneOf": [
+        { "$ref": "#/$defs/PageObject" },
+        { "type": "null" }
+      ]
+    },
+    "meta": {
+      "$ref": "#/$defs/MetaObject"
+    }
+  },
+  "$defs": {
+    "ErrorObject": {
+      "type": "object",
+      "required": ["code", "message", "retryable", "remediation"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Machine-readable error code (e.g., PLAN_EXPIRED)"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error description"
+        },
+        "retryable": {
+          "type": "boolean",
+          "description": "Whether the operation can be retried"
+        },
+        "remediation": {
+          "type": "object",
+          "required": ["summary"],
+          "properties": {
+            "summary": {
+              "type": "string",
+              "description": "Actionable recovery instruction"
+            },
+            "command": {
+              "type": "string",
+              "description": "Suggested CLI command to recover"
+            }
+          }
+        },
+        "details": {
+          "type": "object",
+          "description": "Additional structured error context"
+        }
+      }
+    },
+    "PageObject": {
+      "type": "object",
+      "required": ["limit", "offset", "total", "hasMore"],
+      "properties": {
+        "limit": { "type": "integer" },
+        "offset": { "type": "integer" },
+        "total": { "type": "integer" },
+        "hasMore": { "type": "boolean" },
+        "nextCursor": { "type": "string" }
+      }
+    },
+    "MetaObject": {
+      "type": "object",
+      "properties": {
+        "requestId": { "type": "string" },
+        "durationMs": { "type": "number" },
+        "costUnits": { "type": "number" },
+        "manifestVersion": { "type": "integer" },
+        "policyVersion": { "type": "integer" }
+      }
+    }
+  }
+}

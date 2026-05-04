@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ontologie-growthsystemes.com/schemas/manifest.schema.json",
+  "title": "Schema Manifest",
+  "description": "The schema manifest produced by `dataforge schema push`. Records the exact deployed schema state.",
+  "type": "object",
+  "required": ["manifestVersion", "objectTypes", "linkTypes", "enums", "actions", "hash", "pushedAt"],
+  "properties": {
+    "manifestVersion": {
+      "type": "integer",
+      "description": "Monotonically incrementing version. Incremented on every schema push."
+    },
+    "objectTypes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "apiName", "properties"],
+        "properties": {
+          "name": { "type": "string" },
+          "apiName": { "type": "string", "description": "Stable API identifier" },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string", "enum": ["string", "number", "boolean", "date", "enum", "json"] },
+                "required": { "type": "boolean", "default": false },
+                "indexed": { "type": "boolean", "default": false },
+                "default": {},
+                "mutableBy": { "type": "array", "items": { "type": "string" } },
+                "enumRef": { "type": "string" }
+              }
+            }
+          },
+          "sourceOfTruth": { "type": "string", "enum": ["ontologie_twin", "external"] }
+        }
+      }
+    },
+    "linkTypes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "source", "target", "cardinality"],
+        "properties": {
+          "name": { "type": "string" },
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "cardinality": { "type": "string" },
+          "label": { "type": "string" },
+          "properties": { "type": "array" }
+        }
+      }
+    },
+    "enums": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "values"],
+        "properties": {
+          "name": { "type": "string" },
+          "values": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "objectType", "executionMode", "riskLevel", "version", "definitionHash"],
+        "properties": {
+          "key": { "type": "string" },
+          "objectType": { "type": "string" },
+          "executionMode": { "type": "string" },
+          "riskLevel": { "type": "string" },
+          "version": { "type": "integer" },
+          "definitionHash": { "type": "string" },
+          "inputs": { "type": "object" },
+          "preconditions": { "type": "array" },
+          "effects": { "type": "array" },
+          "requiredRole": { "type": "string" }
+        }
+      }
+    },
+    "hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the entire manifest (used for drift detection)"
+    },
+    "pushedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pushedBy": {
+      "type": "object",
+      "properties": {
+        "principalType": { "type": "string" },
+        "principalId": { "type": "string" }
+      }
+    }
+  }
+}

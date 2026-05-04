@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ontologie-growthsystemes.com/schemas/error-envelope.schema.json",
+  "title": "Error Envelope",
+  "description": "Structured error response from Ontologie CLI, SDK, and API",
+  "type": "object",
+  "required": ["code", "message", "retryable", "remediation"],
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Machine-readable error code. New values may be added in minor versions. Clients must not validate this field as a closed enum. See docs/errors.md for the current list of known codes."
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable error description"
+    },
+    "retryable": {
+      "type": "boolean",
+      "description": "Whether the caller can retry this operation"
+    },
+    "remediation": {
+      "type": "object",
+      "required": ["summary"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Actionable recovery instruction for agents and developers"
+        },
+        "command": {
+          "type": "string",
+          "description": "Suggested CLI command to resolve the error"
+        }
+      }
+    },
+    "details": {
+      "type": "object",
+      "description": "Error-specific structured data",
+      "additionalProperties": true
+    }
+  }
+}

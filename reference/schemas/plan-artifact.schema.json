@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ontologie-growthsystemes.com/schemas/plan-artifact.schema.json",
+  "title": "Plan Artifact",
+  "description": "Plan artifact produced by dry-run operations. Cloud plans are Ed25519-signed. Local mock plans use algorithm: 'mock' and are unsigned.",
+  "type": "object",
+  "required": ["planId", "state", "effects", "bindings", "hash", "createdAt", "expiresAt"],
+  "properties": {
+    "planId": {
+      "type": "string",
+      "description": "Unique plan identifier (plan_...)"
+    },
+    "planKind": {
+      "type": "string",
+      "enum": ["action_apply", "schema_push", "import"],
+      "description": "The kind of operation this plan represents. Defaults to action_apply if absent."
+    },
+    "state": {
+      "type": "string",
+      "enum": ["pending", "applied", "revoked", "expired"],
+      "description": "Current plan lifecycle state"
+    },
+    "algorithm": {
+      "type": "string",
+      "enum": ["ed25519", "mock"],
+      "description": "Signature algorithm. 'ed25519' for cloud plans, 'mock' for local development plans."
+    },
+    "trustLevel": {
+      "type": "string",
+      "enum": ["cloud_signed", "local_mock"],
+      "description": "Trust level of the plan artifact."
+    },
+    "action": {
+      "type": "object",
+      "required": ["key", "version", "definitionHash", "executionMode", "riskLevel"],
+      "properties": {
+        "key": { "type": "string", "description": "Action key (e.g., Contract.approve)" },
+        "version": { "type": "integer", "description": "Action definition version" },
+        "definitionHash": { "type": "string", "description": "SHA-256 of action definition" },
+        "executionMode": {
+          "type": "string",
+          "enum": ["descriptive", "plan_only", "twin_apply", "human_handoff", "workflow_handoff", "external_commit"]
+        },
+        "riskLevel": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": ["objectType", "instanceId", "version"],
+      "properties": {
+        "objectType": { "type": "string" },
+        "instanceId": { "type": "string" },
+        "version": { "type": "integer", "description": "OCC version at dry-run time" }
+      }
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "objectType", "instanceId"],
+        "properties": {
+          "type": { "type": "string", "enum": ["update", "create", "delete", "link", "unlink"] },
+          "objectType": { "type": "string" },
+          "instanceId": { "type": "string" },
+          "before": { "type": "object" },
+          "after": { "type": "object" }
+        }
+      },
+      "description": "Ordered list of mutations this plan will apply"
+    },
+    "bindings": {
+      "type": "object",
+      "required": ["actor", "workspace", "manifestVersion", "policyVersion"],
+      "properties": {
+        "actor": {
+          "type": "object",
+          "required": ["principalType", "principalId"],
+          "properties": {
+            "principalType": { "type": "string", "enum": ["user", "service", "agent_on_behalf_of", "ci"] },
+            "principalId": { "type": "string" },
+            "onBehalfOf": { "type": "string" }
+          }
+        },
+        "workspace": { "type": "string" },
+        "manifestVersion": { "type": "integer" },
+        "policyVersion": { "type": "integer" }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "description": "Normalized action inputs captured at dry-run time"
+    },
+    "costEstimate": {
+      "type": "object",
+      "properties": {
+        "totalDfu": { "type": "number" },
+        "breakdown": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "operation": { "type": "string" },
+              "dfu": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "policyChecks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check", "passed"],
+        "properties": {
+          "check": { "type": "string" },
+          "passed": { "type": "boolean" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "hash": {
+      "type": "string",
+      "description": "SHA-256 canonical hash of the plan body"
+    },
+    "signature": {
+      "type": ["string", "null"],
+      "description": "Ed25519 signature over the hash (base64). Null for local mock plans (algorithm: 'mock')."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,403 @@
+openapi: 3.1.0
+info:
+  title: Ontologie Cloud API
+  version: 1.0.0
+  description: |
+    Public HTTP API for Ontologie Cloud. This API is consumed by the CLI and SDK.
+    Direct HTTP usage is supported but the CLI and SDK provide a better developer experience.
+
+    Authentication: API key (`X-API-Key` header) or OAuth Bearer token.
+    All responses follow the JSON envelope: `{ ok, data, error, page, meta }`.
+  contact:
+    email: support@ontologie-growthsystemes.com
+  license:
+    name: Proprietary
+    url: https://ontologie-growthsystemes.com/terms
+
+servers:
+  - url: https://api.ontologie-growthsystemes.com
+    description: Production
+  - url: https://api.dev-growthsystemes.com
+    description: Staging (developer preview)
+
+security:
+  - apiKey: []
+  - bearerAuth: []
+
+paths:
+  /api/v1/schema/describe:
+    get:
+      operationId: schemaDescribe
+      summary: Describe the workspace schema
+      tags: [Schema]
+      responses:
+        '200':
+          description: Schema description
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/query/{objectType}:
+    get:
+      operationId: queryInstances
+      summary: Query instances of an object type
+      tags: [Query]
+      parameters:
+        - name: objectType
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: filter
+          in: query
+          schema:
+            type: string
+          description: JSON-encoded filter object
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 10000
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Paginated instance list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/actions/describe/{actionKey}:
+    get:
+      operationId: actionsDescribe
+      summary: Describe an action definition
+      tags: [Actions]
+      parameters:
+        - name: actionKey
+          in: path
+          required: true
+          schema:
+            type: string
+          example: Contract.approve
+      responses:
+        '200':
+          description: Action definition with preconditions, inputs, mode
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/actions/run:
+    post:
+      operationId: actionsRun
+      summary: Execute an action (dry-run or apply-plan)
+      tags: [Actions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [actionKey, targetId]
+              properties:
+                actionKey:
+                  type: string
+                  example: Contract.approve
+                targetId:
+                  type: string
+                  example: con_001
+                input:
+                  type: object
+                dryRun:
+                  type: boolean
+                  default: false
+                applyPlan:
+                  type: string
+                  description: Plan ID to apply
+                idempotencyKey:
+                  type: string
+                  description: Required when applyPlan is set
+      responses:
+        '200':
+          description: Action result or plan artifact
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+        '409':
+          description: Plan conflict (expired, version mismatch, etc.)
+        '429':
+          description: Rate limited or budget exceeded
+
+  /api/v1/plans/{planId}:
+    get:
+      operationId: planInspect
+      summary: Inspect a plan artifact
+      tags: [Plans]
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plan details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/plans/{planId}/verify:
+    post:
+      operationId: planVerify
+      summary: Verify a plan is still valid
+      tags: [Plans]
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/plans/{planId}/revoke:
+    post:
+      operationId: planRevoke
+      summary: Revoke (cancel) a pending plan
+      tags: [Plans]
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plan revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/graph/neighbors/{instanceId}:
+    get:
+      operationId: graphNeighbors
+      summary: Get 1-hop graph neighbors
+      tags: [Graph]
+      parameters:
+        - name: instanceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum: [outgoing, incoming, both]
+            default: both
+        - name: linkType
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Neighbor list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/search:
+    get:
+      operationId: search
+      summary: Hybrid search across the workspace
+      tags: [Search]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: mode
+          in: query
+          schema:
+            type: string
+            enum: [keyword, semantic]
+            default: keyword
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/capabilities:
+    get:
+      operationId: capabilitiesExport
+      summary: Export workspace capabilities manifest
+      tags: [Discovery]
+      responses:
+        '200':
+          description: Capabilities manifest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/context/pack:
+    get:
+      operationId: contextPack
+      summary: Generate agent context pack
+      tags: [Discovery]
+      parameters:
+        - name: budgetTokens
+          in: query
+          schema:
+            type: integer
+            default: 4000
+        - name: include
+          in: query
+          schema:
+            type: string
+          description: Comma-separated sections (schema,actions,limits,examples)
+      responses:
+        '200':
+          description: Context pack (markdown or JSON)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /api/v1/usage/me:
+    get:
+      operationId: usageMe
+      summary: Current usage and quota status
+      tags: [Usage]
+      responses:
+        '200':
+          description: Usage summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Server-side API key (dfk_... prefix)
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: OAuth PKCE or JWT token
+
+  schemas:
+    Envelope:
+      type: object
+      required: [ok, meta]
+      properties:
+        ok:
+          type: boolean
+        data:
+          oneOf:
+            - type: object
+            - type: array
+            - type: 'null'
+        error:
+          oneOf:
+            - $ref: '#/components/schemas/Error'
+            - type: 'null'
+        page:
+          oneOf:
+            - $ref: '#/components/schemas/Page'
+            - type: 'null'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    Error:
+      type: object
+      required: [code, message, retryable, remediation]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        retryable:
+          type: boolean
+        remediation:
+          type: object
+          properties:
+            summary:
+              type: string
+            command:
+              type: string
+        details:
+          type: object
+
+    Page:
+      type: object
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+        hasMore:
+          type: boolean
+        nextCursor:
+          type: string
+
+    Meta:
+      type: object
+      properties:
+        requestId:
+          type: string
+        durationMs:
+          type: number
+        costUnits:
+          type: number
+        manifestVersion:
+          type: integer
+        policyVersion:
+          type: integer
+
+  headers:
+    X-Cost-Units:
+      description: DFU consumed by this request
+      schema:
+        type: number
+    X-Budget-Remaining:
+      description: DFU remaining in current period
+      schema:
+        type: number
+    X-RateLimit-Remaining:
+      description: Requests remaining in current window
+      schema:
+        type: integer
+    Retry-After:
+      description: Seconds to wait before retrying
+      schema:
+        type: integer

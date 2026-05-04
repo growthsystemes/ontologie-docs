@@ -1,0 +1,49 @@
+{
+  "Client": [
+    {
+      "id": "cli_001",
+      "name": "Acme Corp",
+      "email": "procurement@acme.com",
+      "sector": "Manufacturing"
+    },
+    {
+      "id": "cli_002",
+      "name": "TechStart SAS",
+      "email": "admin@techstart.io",
+      "sector": "Technology"
+    }
+  ],
+  "Contract": [
+    {
+      "id": "con_001",
+      "reference": "CTR-2024-001",
+      "title": "Annual supply agreement",
+      "amount": 45000,
+      "currency": "EUR",
+      "status": "pending_review",
+      "submittedAt": "2026-04-28T10:00:00Z"
+    },
+    {
+      "id": "con_002",
+      "reference": "CTR-2024-002",
+      "title": "Consulting services Q3",
+      "amount": 12000,
+      "currency": "EUR",
+      "status": "pending_review",
+      "submittedAt": "2026-05-01T14:30:00Z"
+    },
+    {
+      "id": "con_003",
+      "reference": "CTR-2024-003",
+      "title": "Software license renewal",
+      "amount": 8500,
+      "currency": "EUR",
+      "status": "draft"
+    }
+  ],
+  "links": [
+    { "source": "con_001", "target": "cli_001", "type": "belongs_to" },
+    { "source": "con_002", "target": "cli_002", "type": "belongs_to" },
+    { "source": "con_003", "target": "cli_001", "type": "belongs_to" }
+  ]
+}
