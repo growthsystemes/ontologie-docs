@@ -1,10 +1,12 @@
 # Ontologie
 
-The governed operational twin for AI agents.
+**The governed operational twin for AI agents.**
 
 ## Why
 
-Agents should not modify business state through raw databases, generic CRUD APIs, or prompt-only rules. When AI acts on your business processes, you need typed contracts, bounded mutations, verifiable plans, and immutable audit trails -- enforced by the runtime, not by the prompt.
+Ontologie lets AI agents safely understand, query and change business data without direct database access or generic CRUD APIs.
+
+You define your business model as typed objects, links and bounded actions. Agents discover the model, query the live graph, dry-run mutations, inspect signed plans and apply only verified plans through a deterministic CLI and SDK.
 
 ## What Ontologie gives you
 
