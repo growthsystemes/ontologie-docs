@@ -84,6 +84,25 @@ flowchart LR
 
 At apply time, the runtime verifies actor, workspace, action, inputs, object versions, schema version, policy version, expiry, and idempotency before writing anything.
 
+### Plan lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> Pending: dry-run creates plan
+
+  Pending --> Applied: apply-plan + idempotency key
+  Pending --> Revoked: revoke
+  Pending --> Expired: TTL exceeded
+  Pending --> Rejected: actor / workspace / policy / version mismatch
+
+  Applied --> [*]
+  Revoked --> [*]
+  Expired --> [*]
+
+  Applied --> Applied: same plan + same key = replay
+  Applied --> Rejected: same plan + different key
+```
+
 ---
 
 ## Minimal model
@@ -203,29 +222,15 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  Dev["Developer"] --> Local["Local mode"]
-  Dev --> Cloud["Ontologie Cloud"]
-
-  subgraph L["Local — free, no account"]
-    Local --> L1["Schema design"]
-    Local --> L2["Type generation"]
-    Local --> L3["Mock queries"]
-    Local --> L4["Mock dry-runs"]
-    Local --> L5["Agent files"]
-    Local --> L6["Unsigned mock plans"]
+  subgraph Local["Local — free, no account"]
+    L1["Schema design"] ~~~ L2["Type generation"] ~~~ L3["Mock dry-runs + queries"] ~~~ L4["Agent files"]
   end
 
-  subgraph C["Cloud — Sandbox / Runtime / Governance"]
-    Cloud --> C1["Persistent operational twin"]
-    Cloud --> C2["Ed25519 signed plans"]
-    Cloud --> C3["Server-side policy enforcement"]
-    Cloud --> C4["Audit trail"]
-    Cloud --> C5["DFU metering and budget caps"]
-    Cloud --> C6["Team governance"]
+  subgraph Cloud["Ontologie Cloud — governed"]
+    C1["Persistent twin"] ~~~ C2["Ed25519 signed plans"] ~~~ C3["Policy + audit"] ~~~ C4["DFU metering"]
   end
 
-  Local -. "no durable state" .-> Mock(["Mock runtime"])
-  Cloud -. "governed and audited" .-> Prod(["Managed runtime"])
+  Local -. "mock runtime, no durable state" .-> Cloud
 ```
 
 See [Local vs Cloud](docs/local-vs-cloud.md) for a detailed comparison.
