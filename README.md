@@ -17,15 +17,24 @@ Most software exposes the wrong interface to agents:
 - Prompt-only rules are hard to audit
 - MCP wrappers often expose too much power
 
-Ontologie gives agents a safer contract:
+Ontologie resolves the five uncertainties an agent faces before modifying business state:
 
-- **Typed business objects** instead of tables
-- **Declared links** instead of implicit joins
-- **Bounded actions** instead of arbitrary writes
-- **Dry-runs** before mutation
-- **Signed plans** before apply
-- **Server-side policy enforcement**
-- **Audit trails** for every business change
+```mermaid
+flowchart TB
+  Agent["AI Agent: Approve this contract"]
+
+  Agent --> Q1["What is a Contract?"]
+  Agent --> Q2["What is true right now?"]
+  Agent --> Q3["What am I allowed to do?"]
+  Agent --> Q4["What will change exactly?"]
+  Agent --> Q5["How do we prove what happened?"]
+
+  Q1 --> A1["Typed objects, enums, declared links"]
+  Q2 --> A2["Queries, graph context, object versions"]
+  Q3 --> A3["Actions describe, RBAC, policy, mutableBy"]
+  Q4 --> A4["Dry-run, plan diff, execution mode"]
+  Q5 --> A5["Signed plan, idempotency, audit trail"]
+```
 
 ---
 
