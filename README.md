@@ -262,6 +262,24 @@ See [Signed plans and safety](docs/signed-plans-and-safety.md) and [SECURITY.md]
 
 ---
 
+## Use cases
+
+See how real teams use Ontologie to let agents act safely:
+
+| Use case | Domain |
+|----------|--------|
+| [Contract approval](docs/use-cases/contract-approval.md) | Legal / Sales ops |
+| [Vendor onboarding](docs/use-cases/vendor-onboarding.md) | Procurement |
+| [Customer refund](docs/use-cases/refund-approval.md) | Support / Finance |
+| [CRM pipeline](docs/use-cases/crm-pipeline.md) | Revenue ops |
+| [Finance audit](docs/use-cases/finance-audit.md) | Finance / Audit |
+| [IT access request](docs/use-cases/it-access-request.md) | IT / Security |
+| [Data quality](docs/use-cases/data-quality.md) | Operations / Data |
+
+Each demo follows the same safety loop and produces signed plans with full audit trails.
+
+---
+
 ## Pricing
 
 Free locally. Free cloud sandbox. Prepaid cloud runtime for production.
@@ -308,6 +326,7 @@ npm install @dataforge/mcp
 ## Read next
 
 - [Quickstart](QUICKSTART.md) — first result in under 10 minutes
+- [Use cases](docs/use-cases/index.md) — real-world agent scenarios with demo scripts
 - [Concepts](docs/concepts.md) — primitives and mental model
 - [CLI contract](docs/cli-contract.md) — JSON envelope, exit codes, flags
 - [SDK guide](docs/sdk-guide.md) — TypeScript integration

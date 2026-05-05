@@ -77,9 +77,21 @@ V1: only `twin_apply` plans can be applied. All modes are visible and signed.
 - Cloud Runtime: prepaid DFU, budget controls
 - Enterprise: contractual
 
+## Use Cases
+
+Real-world agent scenarios with demo scripts:
+- Contract approval (legal/sales): docs/use-cases/contract-approval.md
+- Vendor onboarding (procurement): docs/use-cases/vendor-onboarding.md
+- Customer refund (support/finance): docs/use-cases/refund-approval.md
+- CRM pipeline governance (revops): docs/use-cases/crm-pipeline.md
+- Finance audit evidence (audit): docs/use-cases/finance-audit.md
+- IT access request (security): docs/use-cases/it-access-request.md
+- Data quality remediation (ops): docs/use-cases/data-quality.md
+
 ## Links
 
 - Docs: docs/
+- Use cases: docs/use-cases/index.md
 - CLI contract: docs/cli-contract.md
 - Safety: docs/signed-plans-and-safety.md
 - SDK: docs/sdk-guide.md
