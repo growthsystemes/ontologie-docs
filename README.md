@@ -2,9 +2,9 @@
 
 **Ontologie is the governed operational layer for AI agents, built by [Growthsystemes](https://www.growthsystemes.com/).**
 
-It turns business operations into an agent-safe operational twin: typed objects, states, links, policies, bounded actions, dry runs, signed plans, and audit. Any AI agent that can use tools, run commands, or call APIs can use Ontologie, including Claude Code, Codex, MCP clients, and custom agent runtimes. 
+It turns business operations into an **agent-safe operational twin**: typed objects, states, links, policies, bounded actions, dry runs, signed plans, and audit. **Any AI agent that can use tools, run commands, or call APIs can use Ontologie**, including Claude Code, Codex, MCP clients, and custom agent runtimes.
 
-Agents can discover the model, query live operational state, understand allowed next steps, and apply only verified plans through governed paths, without raw database access.
+Agents can **discover the model**, **query live operational state**, **understand allowed next steps**, and **apply only verified plans through governed paths**, without raw database access.
 
 The product is Ontologie. The agent and developer surface is `dataforge`: CLI, SDK, npm packages, and MCP adapter.
 
