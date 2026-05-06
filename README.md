@@ -7,6 +7,7 @@ It turns business operations into an agent-safe operational twin: typed objects,
 Agents can discover the model, query live operational state, understand allowed next steps, and apply only verified plans through governed paths, without raw database access.
 
 The product is Ontologie. The agent and developer surface is `dataforge`: CLI, SDK, npm packages, and MCP adapter.
+
 ---
 
 ## Why Ontologie
