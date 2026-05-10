@@ -86,22 +86,7 @@ At apply time, the runtime verifies actor, workspace, action, inputs, object ver
 
 ### Plan lifecycle
 
-```mermaid
-stateDiagram-v2
-  [*] --> Pending: dry-run creates plan
-
-  Pending --> Applied: apply-plan + idempotency key
-  Pending --> Revoked: revoke
-  Pending --> Expired: TTL exceeded
-  Pending --> Rejected: actor / workspace / policy / version mismatch
-
-  Applied --> [*]
-  Revoked --> [*]
-  Expired --> [*]
-
-  Applied --> Applied: same plan + same key = replay
-  Applied --> Rejected: same plan + different key
-```
+Model the process → Query the twin → Create a signed plan → Inspect → Apply → Audit
 
 ---
 
