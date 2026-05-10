@@ -78,22 +78,6 @@ Every mutation follows the same loop:
 5. **Inspect / verify** the signed plan
 6. **Apply** the verified plan with an idempotency key
 
-```mermaid
-stateDiagram-v2
-  [*] --> Discover
-  Discover --> Query
-  Query --> Describe
-  Describe --> DryRun: preview mutation
-  DryRun --> Inspect
-  Inspect --> Verify
-  Verify --> Apply: idempotency key
-  Apply --> Audit
-  Audit --> [*]
-
-  DryRun --> [*]: no mutation, preview only
-  Verify --> [*]: rejects stale or invalid plans
-```
-
 At apply time, the runtime verifies actor, workspace, action, inputs, object versions, schema version, policy version, expiry, and idempotency before writing anything.
 
 ### Plan lifecycle
