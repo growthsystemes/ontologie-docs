@@ -88,6 +88,8 @@ At apply time, the runtime verifies actor, workspace, action, inputs, object ver
 
 Model the process → Query the twin → Create a signed plan → Inspect → Apply → Audit
 
+Agents do not mutate business state directly. Every change is prepared as a signed plan that can be inspected, verified and applied through governed paths.
+
 ---
 
 ## Minimal model
