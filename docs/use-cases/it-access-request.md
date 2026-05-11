@@ -119,7 +119,7 @@ Allowed commands:
 - dataforge actions describe AccessRequest.approve --format json
 - dataforge actions run AccessRequest.approve <accessRequestId> --input-json '{"comment":"<reason>","expiresAt":"<date>"}' --dry-run --format json
 - dataforge plan inspect <planId> --format markdown
-- dataforge actions run AccessRequest.approve <accessRequestId> --apply-plan <planId> --idempotency-key <key> --format json
+- dataforge actions run AccessRequest.approve <accessRequestId> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
 
 Forbidden:
 - Do not directly modify IAM.
@@ -160,6 +160,7 @@ dataforge plan inspect <planId> --format markdown
 # 6. Apply
 dataforge actions run AccessRequest.approve <accessRequestId> \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key approve-access-<accessRequestId>-001 \
   --format json
 ```

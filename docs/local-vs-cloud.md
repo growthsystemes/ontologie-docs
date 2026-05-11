@@ -15,12 +15,13 @@ Ontologie separates modeling from execution. You can design, test, and iterate l
 | Mock queries | Yes | `dataforge dev` starts a local mock server |
 | Mock dry-runs | Yes | Actions return simulated plan artifacts |
 | Mock actions | Yes | Test preconditions and effects locally |
+| Subscriptions | Preview | Stable local realtime is not required for the public KPI |
 | Agent file generation | Yes | `dataforge agent init --target all` |
 | Context pack (local) | Yes | Generated from the schema definition |
-| MCP adapter (local) | Yes | `npx @dataforge/mcp --allow-read --allow-dry-run --local` |
+| MCP adapter (local) | Yes | `npx @ontologie/mcp --allow-read --allow-dry-run --local` |
 | Import dry-run (local) | Yes | Validate CSV/JSON structure |
 
-Local mode is powered by `@dataforge/mock-server`. It is a development tool, not a production runtime.
+Local mode is powered by `@ontologie/mock-server`. It is a development tool, not a production runtime.
 
 ---
 
@@ -50,7 +51,7 @@ The local runtime is a **mock server**, not the cloud backend running locally.
 dataforge dev
 # Mock server at http://localhost:4200
 # Simulates: queries, dry-runs, schema describe, context pack
-# Does NOT simulate: real persistence, real audit, real signed plans
+# Does NOT simulate: real persistence, real audit, real signed plans, stable realtime
 ```
 
 The mock server:
@@ -59,6 +60,7 @@ The mock server:
 - Enforces preconditions and `mutableBy` rules locally
 - Does not persist state across restarts
 - Does not meter DFU
+- Treats subscriptions as Preview; the quickstart and public KPI do not depend on realtime updates
 
 **Mock plans vs cloud plans:**
 

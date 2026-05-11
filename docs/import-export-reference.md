@@ -10,7 +10,7 @@ Import instances of a specific type from a CSV, JSON array, or JSONL file:
 
 ```bash
 dataforge import contracts.csv --type Contract --dry-run --format json
-dataforge import contracts.csv --type Contract --apply-plan <planId> --idempotency-key import-001 --format json
+dataforge import contracts.csv --type Contract --apply-plan <planId> --plan-hash <hash> --idempotency-key import-001 --format json
 ```
 
 The `--type` flag is required. It tells the importer which ObjectType schema to validate against.
@@ -23,10 +23,10 @@ Seed files (like `seed.json`) contain multiple object types. Import each type se
 # seed.json contains { "Client": [...], "Contract": [...], "links": [...] }
 
 dataforge import seed.json --type Client --dry-run --format json
-dataforge import seed.json --type Client --apply-plan <planId> --idempotency-key import-clients-001 --format json
+dataforge import seed.json --type Client --apply-plan <planId> --plan-hash <hash> --idempotency-key import-clients-001 --format json
 
 dataforge import seed.json --type Contract --dry-run --format json
-dataforge import seed.json --type Contract --apply-plan <planId> --idempotency-key import-contracts-001 --format json
+dataforge import seed.json --type Contract --apply-plan <planId> --plan-hash <hash> --idempotency-key import-contracts-001 --format json
 ```
 
 The importer reads the section matching the type name from the seed file.
@@ -56,7 +56,7 @@ Import follows the same plan lifecycle as actions:
 dataforge import data.csv --type Contract --dry-run --format json
 
 # Apply: execute the import
-dataforge import data.csv --type Contract --apply-plan <planId> --idempotency-key import-001 --format json
+dataforge import data.csv --type Contract --apply-plan <planId> --plan-hash <hash> --idempotency-key import-001 --format json
 ```
 
 Every apply requires an idempotency key. Replaying the same key returns the original result.
@@ -73,6 +73,7 @@ console.log(preview.validRows, preview.errors);
 // Apply import with idempotency key
 const result = await client.import.apply('Contract', './contracts.csv', {
   planId: preview.planId,
+  planHash: preview.planHash,
   idempotencyKey: 'import-contracts-001',
 });
 ```

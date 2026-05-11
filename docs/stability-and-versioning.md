@@ -30,8 +30,8 @@ The agent safety loop and its supporting primitives:
 | Signed plans | Full lifecycle: create, inspect, verify, apply, revoke |
 | Search | Keyword search |
 | Agent integration | `agent init`, `agent doctor`, `context pack`, `capabilities export` |
-| Mock server | `@dataforge/mock-server` |
-| SDK client | `@dataforge/sdk-client` core API |
+| Mock server | `@ontologie/mock-server` |
+| SDK client | `@ontologie/sdk-client` core API |
 | Auth | API keys (server-side), OAuth PKCE (browser) |
 | Import/Export | CSV/JSON/JSONL import with dry-run, JSONL export |
 
@@ -41,8 +41,8 @@ The agent safety loop and its supporting primitives:
 
 Shipped and maintained, but not part of the core agent safety contract:
 
-- React hooks (`@dataforge/react`)
-- OAuth PKCE client (`@dataforge/oauth`)
+- React hooks (`@ontologie/react`)
+- OAuth PKCE client (`@ontologie/oauth`)
 - Usage/quota APIs
 - Billing headers (`X-Cost-Units`, `X-Budget-Remaining`)
 
@@ -52,12 +52,12 @@ Shipped and maintained, but not part of the core agent safety contract:
 
 May change. Documented. Best-effort support.
 
-- MCP adapter (`@dataforge/mcp`)
+- MCP adapter (`@ontologie/mcp`)
 - Semantic search
 - Deep graph traversal (depth > 1)
 - Aggregate queries
 - Batch/bulk operations
-- Subscriptions (real-time updates)
+- Subscriptions (real-time updates; Preview)
 
 ---
 
@@ -121,8 +121,8 @@ Preview features may be removed or changed in minor versions without a deprecati
 | Surface | Guarantee |
 |---------|-----------|
 | CLI `dataforge.cli.v1` | Stable commands never remove fields in minor versions |
-| SDK `@dataforge/sdk-client` | SemVer with 12-month deprecation |
-| MCP `@dataforge/mcp` | Preview. May change. No guarantee until Stable. |
+| SDK `@ontologie/sdk-client` | SemVer with 12-month deprecation |
+| MCP `@ontologie/mcp` | Preview. May change. No guarantee until Stable. |
 | JSON envelope | `ok`, `data`, `error`, `page`, `meta` are stable fields |
 | Enum values | May be extended. Never removed in minor versions. |
 | Exit codes | Stable. New codes may be added. |

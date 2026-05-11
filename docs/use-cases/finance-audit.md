@@ -79,6 +79,8 @@ const InvoiceToEvidence = link('Invoice', 'EvidencePack')
 |--------|---------|----------------|
 | `Invoice.flagAnomaly` | Mark an invoice as an exception | `twin_apply` |
 | `Invoice.clearAnomaly` | Clear an anomaly after review | `twin_apply` |
+| `EvidencePack.approve` | Approve an evidence pack after review | `twin_apply` |
+| `EvidencePack.reject` | Reject an evidence pack | `twin_apply` |
 | `Control.markReviewed` | Mark a control as reviewed with evidence | `twin_apply` |
 | `Control.markFailed` | Mark a failed control | `twin_apply` |
 | `JournalEntry.proposeCorrection` | Produce a correction proposal without mutation | `plan_only` |
@@ -93,6 +95,8 @@ const InvoiceToEvidence = link('Invoice', 'EvidencePack')
   "allowedActions": [
     "Invoice.flagAnomaly",
     "Invoice.clearAnomaly",
+    "EvidencePack.approve",
+    "EvidencePack.reject",
     "Control.markReviewed",
     "Control.markFailed",
     "JournalEntry.proposeCorrection"
@@ -124,7 +128,7 @@ Allowed commands:
 - dataforge actions describe Invoice.flagAnomaly --format json
 - dataforge actions run Invoice.flagAnomaly <invoiceId> --input-json '{"reason":"<reason>","severity":"medium"}' --dry-run --format json
 - dataforge plan inspect <planId> --format markdown
-- dataforge actions run Invoice.flagAnomaly <invoiceId> --apply-plan <planId> --idempotency-key <key> --format json
+- dataforge actions run Invoice.flagAnomaly <invoiceId> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
 
 Forbidden:
 - Do not mutate ledger entries directly.
@@ -164,6 +168,7 @@ dataforge plan inspect <planId> --format markdown
 # 6. Apply
 dataforge actions run Invoice.flagAnomaly <invoiceId> \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key flag-anomaly-<invoiceId>-001 \
   --format json
 ```

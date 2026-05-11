@@ -1,6 +1,6 @@
 # Billing and Limits
 
-> Free locally. Metered in the cloud. Governed when it matters.
+> Free locally. Prepaid in self-serve. Governed when it matters.
 
 ---
 
@@ -11,8 +11,50 @@
 | **Local Free** | Free, no account | Model, generate, mock, test | Local |
 | **Cloud Sandbox** | Free, no card | Operational twin, 10K DFU hard cap | dev |
 | **Cloud Runtime** | Prepaid DFU packs | Production, signed plans, budget controls | dev + prod |
-| **+ Governance** | Per workspace/month | RBAC, approvals, audit retention | dev + staging + prod |
+| **+ Governance** | $299/workspace/month | RBAC, approvals, audit retention | dev + staging + prod |
 | **Enterprise** | Contract | SSO, SCIM, data residency, dedicated | Custom |
+
+---
+
+## Billing implementation status
+
+Cloud Runtime self-serve uses prepaid usage credits.
+
+- You buy DataForge Units upfront through Stripe Checkout.
+- Internal DFU ledgers enforce balance and hard budgets before requests run.
+- Each cloud operation consumes DFU from your workspace balance.
+- When balance or hard budget is insufficient, usage stops before execution.
+- No monthly metered Runtime invoice is generated for self-serve.
+- Stripe Meter Events are not used for self-serve Runtime.
+- Governance is a separate recurring subscription line item.
+- Auto-recharge is opt-in and only buys another prepaid DFU pack within limits you define.
+
+Cloud Runtime self-serve uses prepaid usage credits. Stripe Meter Events are not used for self-serve Runtime billing decisions; they remain an accounting/export integration behind the internal DFU ledger.
+
+Staging is configured in Stripe test mode. Production Stripe remains disabled until live products/prices are created and reviewed.
+
+### Commercialisation gate
+
+Runtime billing is considered production-ready only when all of these are true:
+
+- Public BaaS signed-plan use cases pass on staging with no hidden 429 fallback.
+- DFU pack checkout, ledger credit, wallet enforcement, and cleanup fixtures pass on staging.
+- Live Stripe DFU pack price IDs and webhook secret are created, reviewed, and rotated if needed.
+- Production Stripe enablement is explicitly approved after the BaaS, billing, and ops/security gates are green.
+
+The broad API cloud suite is tracked separately. A broad API failure does not change the prepaid Runtime contract above unless it affects signed plans, DFU checkout, wallet enforcement, or proof/audit.
+
+### DFU packs
+
+| Pack | Price |
+|------|-------|
+| 200K DFU | $30 |
+| 500K DFU | $75 |
+| 5M DFU | $750 |
+| 20M DFU | $2,500 |
+| 100M DFU | $10,000 |
+
+Public production minimum: 200K DFU / $30. A 50K DFU pack may exist only for tests, support, sandbox grants, or hidden promotions.
 
 ---
 
@@ -26,6 +68,17 @@
 - Prepaid DFU packs with configurable budget controls
 - Production workspaces, higher budgets, governed plans
 - Preview capabilities (semantic search, deep traversal, MCP write tools)
+
+Runtime DFU credits are service credits, not cash. They are not transferable, not withdrawable, not redeemable, and do not apply to Governance.
+
+### Runtime prepaid flow
+
+1. Add prepaid DFU credits.
+2. Set a hard monthly budget.
+3. Run cloud operations.
+4. Usage consumes DFU.
+5. When balance or budget is exhausted, operations stop.
+6. Add credits or enable auto-recharge to continue.
 
 ---
 
@@ -67,7 +120,14 @@ Dry-runs are free. They return a `costEstimate` showing what the future apply wi
 | Daily cap | Optional limit to spread usage evenly |
 | Per-command cap | Maximum DFU a single command can consume |
 
-When a cap is hit, the command returns a budget-exceeded error. No partial charges. No silent continuation.
+When a cap is hit, the command returns a budget-exceeded or payment-required error before execution. No partial charges. No silent continuation.
+
+Budget and quota administration is protected separately from usage reads:
+
+- `GET /api/quota/status`, `GET /api/quota/history`, and synchronous quota checks require `billing:read` in the current workspace.
+- `/api/quota/admin/*` routes require a user session, workspace context, `settings.admin`, and `billing:write`.
+- Admin routes that target an arbitrary `workspaceId` refuse cross-workspace changes unless the actor is a global or service admin.
+- A numeric limit of `0` is a valid hard cap, not an unlimited value.
 
 ```bash
 # Preview cost before executing
@@ -154,8 +214,8 @@ dataforge query Contract --limit 20 --format json
 
 | Header | When | Description |
 |--------|------|-------------|
-| `X-Cost-Units` | Every metered response | DFU consumed |
-| `X-Budget-Remaining` | Every metered response | DFU remaining |
+| `X-Cost-Units` | Every DFU-tracked response | DFU consumed |
+| `X-Budget-Remaining` | Every DFU-tracked response | DFU remaining |
 | `X-Budget-Warning` | > 80% consumed | Budget running low |
 | `X-RateLimit-Remaining` | Every response | Requests remaining |
 | `X-RateLimit-Reset` | On 429 | Window reset timestamp |
@@ -192,6 +252,7 @@ The response includes your workspace's effective limits, adjusted for your tier 
 
 | Code | HTTP | Meaning |
 |------|------|---------|
+| `dfu_balance_insufficient` | 402 | Workspace has insufficient prepaid DFU balance |
 | `RATE_LIMITED` | 429 | Too many requests |
 | `BUDGET_EXCEEDED` | 429 | Workspace budget cap reached |
 | `COMMAND_COST_LIMIT_EXCEEDED` | 429 | Single command exceeds per-command cap |

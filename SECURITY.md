@@ -19,7 +19,7 @@ Ontologie enforces safety at the runtime layer, not through prompt instructions.
 ## API key rules
 
 - API keys are **server-side only**. Never embed them in frontend code.
-- Browser applications use **OAuth PKCE** via `@dataforge/oauth`.
+- Browser applications use **OAuth PKCE** via `@ontologie/oauth`.
 - Keys are scoped: `reads`, `writes`, `actions`, `schema`, `admin`.
 - Keys are rotatable, auditable, and support IP allowlists (CIDR).
 - Plaintext is never stored. Only HMAC-SHA256 hashes are persisted.

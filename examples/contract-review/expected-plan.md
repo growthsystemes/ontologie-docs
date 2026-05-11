@@ -99,6 +99,7 @@ The server returns a plan artifact like:
 ```bash
 dataforge actions run Contract.approve con_001 \
   --apply-plan plan_abc123def456 \
+  --plan-hash sha256:<hash> \
   --idempotency-key approve-con-001-20260504 \
   --format json
 ```

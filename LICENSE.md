@@ -4,15 +4,15 @@
 
 The following packages are released under the **MIT License**:
 
-- `@dataforge/cli`
-- `@dataforge/sdk-client`
-- `@dataforge/schema`
-- `@dataforge/react`
-- `@dataforge/oauth`
-- `@dataforge/mock-server`
-- `@dataforge/types`
-- `@dataforge/generator`
-- `@dataforge/mcp`
+- `@ontologie/cli`
+- `@ontologie/sdk-client`
+- `@ontologie/schema`
+- `@ontologie/react`
+- `@ontologie/oauth`
+- `@ontologie/mock-server`
+- `@ontologie/types`
+- `@ontologie/generator`
+- `@ontologie/mcp`
 
 ```
 MIT License

@@ -11,7 +11,7 @@ Safety is enforced at the runtime layer, not through prompt instructions.
 ## Quick Start
 
 ```bash
-npm install @dataforge/cli @dataforge/sdk-client @dataforge/schema
+npm install @ontologie/cli @ontologie/sdk-client @ontologie/schema
 dataforge init --template contract-review
 dataforge dev
 dataforge schema describe --format json
@@ -31,20 +31,20 @@ Exit codes: 0=success, 1=error, 2=validation, 3=auth, 4=authorization, 5=capabil
 | Query | `dataforge query <Type> --format json` | `client.ontology.Type.where()` |
 | Search | `dataforge search "term"` | `client.search()` |
 | Traverse | `dataforge graph neighbors <id>` | `client.graph.neighbors()` |
-| Plan | `dataforge actions run <key> <id> --dry-run` | `.dryRun()` |
+| Plan | `dataforge actions run <key> <id> --dry-run` | `client.actions.dryRun(key, { targetId, input })` |
 | Inspect | `dataforge plan inspect <planId>` | `client.plans.inspect()` |
-| Apply | `dataforge actions run <key> <id> --apply-plan <planId>` | `.applyPlan()` |
+| Apply | `dataforge actions run <key> <id> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key>` | `client.actions.applyPlan(actionKey, planId, idempotencyKey, { planHash })` |
 | Measure | `dataforge usage me` | `client.usage.me()` |
 
 ## Safety Model
 
 - All mutations support `--dry-run` which returns a plan artifact (Ed25519 signed in cloud; unsigned mock locally)
-- Apply: `--apply-plan <planId> --idempotency-key <key>`
+- Apply: `--apply-plan <planId> --plan-hash <hash> --idempotency-key <key>`
 - Server verifies: actor, workspace, schema version, policy version, object versions, action version, expiry, idempotency (27 checks)
 - Workspace policy: `read_only`, `forbidDelete`, `requireDryRun`, `maxObjectsTouched`
 - `mutableBy`: per-field write control (only declared actions can modify)
 - API keys: HMAC-SHA256, scoped, server-side only
-- Browser apps: OAuth PKCE via `@dataforge/oauth`
+- Browser apps: OAuth PKCE via `@ontologie/oauth`
 
 ## Agent Recovery Rules
 
@@ -67,7 +67,7 @@ V1: only `twin_apply` plans can be applied. All modes are visible and signed.
 
 - **Stable**: CLI, Schema DSL, ObjectSet, actions, plans, search (keyword), graph neighbors
 - **Platform**: React hooks, OAuth, usage/quotas
-- **Preview**: MCP, semantic search, deep traversal, aggregate, bulk
+- **Preview**: MCP, semantic search, deep traversal, aggregate, bulk, subscriptions
 - **V1.1**: Handoff enforcement, governance add-on
 
 ## Pricing

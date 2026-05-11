@@ -23,7 +23,7 @@ dataforge query Contract --filter-json '{"status":{"eq":"pending_review"}}' --fo
 dataforge actions describe Contract.approve --format json
 dataforge actions run Contract.approve con_001 --input-json '{"comment":"OK"}' --dry-run --format json
 dataforge plan inspect <planId> --format markdown
-dataforge actions run Contract.approve con_001 --apply-plan <planId> --idempotency-key approve-001 --format json
+dataforge actions run Contract.approve con_001 --apply-plan <planId> --plan-hash <hash> --idempotency-key approve-001 --format json
 ```
 
 ---
@@ -148,8 +148,64 @@ Every apply requires a unique idempotency key. This guarantees:
 ```bash
 dataforge actions run Contract.approve con_001 \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key approve-con-001-$(date +%s) \
   --format json
+```
+
+---
+
+## API protocol reference
+
+When using the REST API directly (instead of the CLI), these exact request shapes apply.
+
+### Idempotency-Key header
+
+All POST endpoints require an `Idempotency-Key` header when authenticated with an API key. Without it, the server returns `POLICY_IDEMPOTENCY_REQUIRED` (HTTP 400).
+
+```
+POST /api/v1/actions/Contract.approve/dry-run
+X-API-Key: df_...
+X-Workspace-Id: <workspace-id>
+Idempotency-Key: dryrun-contract-001-1715500000
+
+{"targetId": "<instance-id>", "input": {"comment": "Approved"}}
+```
+
+### Dry-run request
+
+```
+POST /api/v1/actions/{actionKey}/dry-run
+Content-Type: application/json
+Idempotency-Key: <unique-key>
+
+{"targetId": "<instance-id>", "input": {<action-specific fields>}}
+```
+
+Response includes `planId` and `planHash`.
+
+### Verify request
+
+After dry-run, verify the plan before applying. Both fields are required for `canApply: true`.
+
+```
+POST /api/v1/plans/{planId}/verify
+Content-Type: application/json
+Idempotency-Key: <unique-key>
+
+{"riskAcknowledged": true, "confirmed": true}
+```
+
+### Apply (invoke) request
+
+The apply body must contain **only** `planId` and `planHash`. Extra fields (such as `targetId` or `input`) are rejected with `APPLY_PLAN_INPUT_NOT_ALLOWED`.
+
+```
+POST /api/v1/actions/{actionKey}/invoke
+Content-Type: application/json
+Idempotency-Key: <unique-key>
+
+{"planId": "<plan-id>", "planHash": "<sha256-hash>"}
 ```
 
 ---

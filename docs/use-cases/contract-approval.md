@@ -107,12 +107,14 @@ Approve one Contract only if the runtime says the action is available
 and the dry-run plan passes policy checks.
 
 Allowed commands:
+- dataforge context pack "approve the pending contract safely" --format markdown
 - dataforge schema describe --format json
 - dataforge query contract --filter-json '{"status":{"eq":"pending_review"}}' --format json
 - dataforge actions describe Contract.approve --format json
 - dataforge actions run Contract.approve <contractId> --input-json '{"comment":"<reason>"}' --dry-run --format json
 - dataforge plan inspect <planId> --format markdown
-- dataforge actions run Contract.approve <contractId> --apply-plan <planId> --idempotency-key <key> --format json
+- dataforge plan verify <planId> --format json
+- dataforge actions run Contract.approve <contractId> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
 
 Forbidden:
 - Do not invent action keys.
@@ -130,33 +132,40 @@ Success criteria:
 ## Demo script
 
 ```bash
-# 1. Discover the model
+# 1. Generate agent-readable context
+dataforge context pack "approve the pending contract safely" --format markdown
+
+# 2. Discover the model
 dataforge schema describe --format json
 
-# 2. Find contracts pending review
+# 3. Find contracts pending review
 dataforge query contract \
   --filter-json '{"status":{"eq":"pending_review"}}' \
   --format json
 
-# 3. Describe the approval action
+# 4. Describe the approval action
 dataforge actions describe Contract.approve --format json
 
-# 4. Dry-run: create a signed plan
+# 5. Dry-run: create a signed plan
 dataforge actions run Contract.approve <contractId> \
   --input-json '{"comment":"Budget verified and terms match policy"}' \
   --dry-run \
   --format json
 
-# 5. Inspect the plan
+# 6. Inspect the plan
 dataforge plan inspect <planId> --format markdown
 
-# 6. Apply the plan
+# 7. Verify the plan
+dataforge plan verify <planId> --format json
+
+# 8. Apply the plan
 dataforge actions run Contract.approve <contractId> \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key approve-contract-<contractId>-001 \
   --format json
 
-# 7. Verify final state
+# 9. Verify final state
 dataforge query contract \
   --filter-json '{"id":{"eq":"<contractId>"}}' \
   --format json
@@ -185,6 +194,21 @@ A successful run produces:
 - Action version.
 - Idempotency key (prevents duplicate application).
 - Audit event with full provenance.
+
+## Validation primitives
+
+These primitives make this use case reusable as the reference pattern for future public templates:
+
+| Primitive | Required proof |
+|-----------|----------------|
+| Context grounding | `dataforge context pack` returns a non-empty context before action selection |
+| Twin query | `dataforge query` returns at least one target object in the expected state |
+| Action contract | `actions describe` exposes the action key, execution mode, preconditions, effects, and input schema |
+| Signed plan creation | Dry-run returns `planId`, `planHash`, `signature.algorithm=ed25519`, target binding, and expiry |
+| Inspectability | `plan inspect` returns a readable diff or effect list before any apply |
+| Verifiability | `plan verify` returns zero failed checks |
+| Governed apply | `--apply-plan` requires `--plan-hash` and an idempotency key and cannot mutate outside the signed plan |
+| Durable proof | Audit or action execution references the `planId`, actor, idempotency hash, and final status |
 
 ## Example plan output
 
@@ -215,6 +239,7 @@ Risk: **medium**
 ## Apply
 dataforge actions run Contract.approve \
   --apply-plan 845f9bf5-caf4-4ae2-bb0c-a96c3610c6df \
+  --plan-hash <hash> \
   --idempotency-key <key>
 ```
 

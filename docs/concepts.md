@@ -210,6 +210,6 @@ The billing unit across all Ontologie cloud operations. One DFU approximates one
 - **Not a workflow engine** -- use `workflow_handoff` to delegate orchestration to Temporal, n8n, or similar
 - **Not a data warehouse** -- it governs operational state, not analytical queries
 - **Not a search engine for unstructured documents** -- keyword and semantic search operate over typed instances
-- **Not a real-time streaming platform** -- use Live Data connectors for ingestion, subscriptions for change events
+- **Not a real-time streaming platform** -- use Live Data connectors for ingestion; subscriptions are Preview for change events
 - **Not a replacement for your source systems** -- unless explicitly configured (`sourceOfTruth: ontologie_twin`)
 - **Not self-hosted** -- CLI/SDK packages are open-source (MIT); the cloud runtime is proprietary

@@ -119,7 +119,7 @@ Allowed commands:
 - dataforge actions describe RefundRequest.approve --format json
 - dataforge actions run RefundRequest.approve <refundRequestId> --input-json '{"comment":"<reason>"}' --dry-run --format json
 - dataforge plan inspect <planId> --format markdown
-- dataforge actions run RefundRequest.approve <refundRequestId> --apply-plan <planId> --idempotency-key <key> --format json
+- dataforge actions run RefundRequest.approve <refundRequestId> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
 
 Forbidden:
 - Do not call a payment processor directly.
@@ -160,6 +160,7 @@ dataforge plan inspect <planId> --format markdown
 # 6. Apply
 dataforge actions run RefundRequest.approve <refundRequestId> \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key approve-refund-<refundRequestId>-001 \
   --format json
 ```

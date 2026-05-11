@@ -9,7 +9,7 @@ import {
   role,
   now,
   compile,
-} from '@dataforge/schema';
+} from '@ontologie/schema';
 
 // --- Enums ---
 

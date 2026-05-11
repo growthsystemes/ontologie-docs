@@ -16,7 +16,7 @@ dataforge actions describe Contract.approve --format json
 
 # Safety loop: dry-run then apply
 dataforge actions run Contract.approve <id> --input-json '{"comment":"..."}' --dry-run --format json
-dataforge actions run Contract.approve <id> --apply-plan <planId> --idempotency-key <key> --format json
+dataforge actions run Contract.approve <id> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
 ```
 
 ## Key constraints

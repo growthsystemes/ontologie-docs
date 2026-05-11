@@ -14,7 +14,7 @@ Get from zero to a working agent-ready business model in under 10 minutes.
 ## 1. Install the CLI
 
 ```bash
-npm install -g @dataforge/cli
+npm install -g @ontologie/cli
 ```
 
 Verify:
@@ -44,7 +44,7 @@ This creates:
 
 ```typescript
 // dataforge.schema.ts
-import { objectType, string, number, date, enumType, action, role, now, compile } from '@dataforge/schema';
+import { objectType, string, number, date, enumType, action, role, now, compile } from '@ontologie/schema';
 
 const ContractStatus = enumType('ContractStatus', [
   'draft', 'pending_review', 'approved', 'rejected',
@@ -101,7 +101,7 @@ dataforge login
 
 # Push the schema
 dataforge schema push --dry-run --format json
-dataforge schema push --apply-plan <planId> --idempotency-key schema-push-001 --format json
+dataforge schema push --yes --format json
 
 # Generate typed SDK client
 dataforge generate
@@ -118,11 +118,11 @@ The seed file contains multiple types. Import each type separately:
 ```bash
 # Import clients
 dataforge import seed.json --type Client --dry-run --format json
-dataforge import seed.json --type Client --apply-plan <planId> --idempotency-key import-clients-001 --format json
+dataforge import seed.json --type Client --apply-plan <planId> --plan-hash <hash> --idempotency-key import-clients-001 --format json
 
 # Import contracts
 dataforge import seed.json --type Contract --dry-run --format json
-dataforge import seed.json --type Contract --apply-plan <planId> --idempotency-key import-contracts-001 --format json
+dataforge import seed.json --type Contract --apply-plan <planId> --plan-hash <hash> --idempotency-key import-contracts-001 --format json
 ```
 
 The `--type` flag tells the importer which section of the seed file to read. Each import is an independent plan with its own idempotency key.
@@ -152,6 +152,7 @@ dataforge plan inspect <planId> --format markdown
 # 6. Apply
 dataforge actions run Contract.approve con_001 \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key approve-con-001-001 \
   --format json
 ```

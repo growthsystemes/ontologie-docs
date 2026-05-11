@@ -1,13 +1,13 @@
 # SDK Guide
 
-The TypeScript SDK (`@dataforge/sdk-client`) provides a typed, programmatic interface to Ontologie. It projects the same contract as the CLI with the same scopes, policies, and safety guarantees.
+The TypeScript SDK (`@ontologie/sdk-client`) provides a typed, programmatic interface to Ontologie. It projects the same contract as the CLI with the same scopes, policies, and safety guarantees.
 
 ---
 
 ## Install
 
 ```bash
-npm install @dataforge/sdk-client @dataforge/schema
+npm install @ontologie/sdk-client @ontologie/schema
 ```
 
 ---
@@ -15,7 +15,7 @@ npm install @dataforge/sdk-client @dataforge/schema
 ## Authentication
 
 ```typescript
-import { createClient } from '@dataforge/sdk-client';
+import { createClient } from '@ontologie/sdk-client';
 
 // Server-side only (API key)
 const client = createClient({
@@ -23,8 +23,8 @@ const client = createClient({
   workspaceId: process.env.DATAFORGE_WORKSPACE_ID!,
 });
 
-// Browser (OAuth PKCE) -- use @dataforge/oauth
-import { createOAuthClient } from '@dataforge/oauth';
+// Browser (OAuth PKCE) -- use @ontologie/oauth
+import { createOAuthClient } from '@ontologie/oauth';
 const oauthClient = createOAuthClient({ clientId: 'your-app-id' });
 ```
 
@@ -34,11 +34,11 @@ API keys are forbidden in frontend code. Use OAuth PKCE for browser applications
 
 ---
 
-## Schema discovery
+## Schema and action discovery
 
 ```typescript
-// Describe the full schema
-const schema = await client.schema.describe();
+// Schema discovery is CLI-first in the current stable surface:
+// dataforge schema describe --format json
 
 // Describe a specific action
 const action = await client.actions.describe('Contract.approve');
@@ -68,14 +68,14 @@ console.log(contracts.page.total, contracts.page.hasMore);
 ```typescript
 // 1-hop neighbors
 const neighbors = await client.graph.neighbors('con_001', {
-  direction: 'outgoing',
-  linkType: 'belongs_to',
+  direction: 'outbound',
+  edgeTypes: ['belongs_to'],
 });
 
 // Bounded traversal (Preview)
 const graph = await client.graph.traverse('con_001', {
   maxDepth: 2,
-  maxResults: 50,
+  limit: 50,
 });
 ```
 
@@ -100,14 +100,16 @@ const semantic = await client.search('contracts pending legal review', {
 
 ```typescript
 // 1. Dry-run -- creates a signed plan
-const plan = await client.actions.dryRun('Contract.approve', 'con_001', {
+const plan = await client.actions.dryRun('Contract.approve', {
+  targetId: 'con_001',
   input: { comment: 'Reviewed by legal' },
 });
 
 console.log(plan.planId);
-console.log(plan.effects);      // before/after diff
-console.log(plan.costEstimate); // DFU cost
-console.log(plan.policyChecks); // pass/fail array
+console.log(plan.planHash);
+console.log(plan.body.effects);      // before/after diff
+console.log(plan.body.costEstimate); // DFU cost
+console.log(plan.body.policyChecks); // pass/fail array
 
 // 2. Inspect (optional)
 const details = await client.plans.inspect(plan.planId);
@@ -116,12 +118,26 @@ const details = await client.plans.inspect(plan.planId);
 const valid = await client.plans.verify(plan.planId);
 
 // 4. Apply with idempotency key
-const result = await client.actions.applyPlan('Contract.approve', 'con_001', {
-  planId: plan.planId,
-  idempotencyKey: 'approve-con-001-001',
-});
+const result = await client.actions.applyPlan(
+  'Contract.approve',
+  plan.planId,
+  'approve-con-001-001',
+  {
+    planHash: plan.planHash,
+    confirmed: true,
+  },
+);
 
-console.log(result.version); // new version
+console.log(result.summary);
+```
+
+There is intentionally no `dataforge plan apply` command. CLI apply goes through:
+
+```bash
+dataforge actions run Contract.approve con_001 \
+  --apply-plan <planId> \
+  --plan-hash <hash> \
+  --idempotency-key approve-con-001-001
 ```
 
 ---
@@ -129,10 +145,15 @@ console.log(result.version); // new version
 ## Error handling
 
 ```typescript
-import { DataForgeError } from '@dataforge/sdk-client';
+import { DataForgeError } from '@ontologie/sdk-client';
 
 try {
-  const result = await client.actions.applyPlan(...);
+  const result = await client.actions.applyPlan(
+    'Contract.approve',
+    plan.planId,
+    'approve-con-001-retry',
+    { planHash: plan.planHash },
+  );
 } catch (err) {
   if (err instanceof DataForgeError) {
     console.log(err.code);          // 'PLAN_EXPIRED'
@@ -142,7 +163,10 @@ try {
 
     if (err.code === 'PLAN_EXPIRED') {
       // Create a new dry-run
-      const newPlan = await client.actions.dryRun(...);
+      const newPlan = await client.actions.dryRun('Contract.approve', {
+        targetId: 'con_001',
+        input: { comment: 'Reviewed by legal' },
+      });
     }
   }
 }
@@ -238,7 +262,7 @@ const status: ContractStatus = contracts[0].status; // 'draft' | 'pending_review
 ## React hooks
 
 ```typescript
-import { useOntologyQuery, useAction } from '@dataforge/react';
+import { useOntologyQuery, useAction } from '@ontologie/react';
 
 function ContractList() {
   const { data, isLoading } = useOntologyQuery('Contract', {
@@ -269,21 +293,21 @@ function ContractList() {
 
 | Package | Purpose | Stability |
 |---------|---------|-----------|
-| `@dataforge/sdk-client` | Core client (queries, actions, plans) | Stable |
-| `@dataforge/schema` | Schema DSL (objectType, action, link, enum) | Stable |
-| `@dataforge/react` | React hooks | Platform |
-| `@dataforge/oauth` | OAuth PKCE for browsers | Platform |
-| `@dataforge/mock-server` | Local mock runtime | Stable |
-| `@dataforge/types` | Shared TypeScript types | Stable |
-| `@dataforge/generator` | Codegen from schema | Stable |
-| `@dataforge/mcp` | MCP adapter (stdio proxy) | Preview |
+| `@ontologie/sdk-client` | Core client (queries, actions, plans) | Stable |
+| `@ontologie/schema` | Schema DSL (objectType, action, link, enum) | Stable |
+| `@ontologie/react` | React hooks | Platform |
+| `@ontologie/oauth` | OAuth PKCE for browsers | Platform |
+| `@ontologie/mock-server` | Local mock runtime | Stable |
+| `@ontologie/types` | Shared TypeScript types | Stable |
+| `@ontologie/generator` | Codegen from schema | Stable |
+| `@ontologie/mcp` | MCP adapter (stdio proxy) | Preview |
 
 ---
 
 ## Security rules
 
 - API keys: server-side only, scoped, rotatable
-- Browser apps: OAuth PKCE only (`@dataforge/oauth`)
+- Browser apps: OAuth PKCE only (`@ontologie/oauth`)
 - Never embed API keys in frontend code
 - The SDK enforces the same policies as the CLI
 - All mutations go through the signed plan lifecycle

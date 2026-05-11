@@ -57,15 +57,18 @@ The `writes` scope enables direct instance CRUD for controlled ingestion and adm
 - **One key per use case.** Create separate keys for CI, agents, and services.
 - **Minimal scopes.** Grant only what is needed.
 - **Rotate regularly.** Especially after team changes.
+- **Management routes require a user session.** API keys can call only their own introspection endpoints on the key-management router: `/api/api-keys/me` and `/api/api-keys/verify`.
+- **Key management mutations require workspace admin authority.** Creating, updating, rotating, or revoking keys requires an authenticated user session with `admin` or `owner` role in the workspace.
+- **CIDR allowlists are strict.** IPv4 CIDR values must use exactly one slash and a mask from `0` to `32`, for example `192.168.1.0/24`.
 
 ---
 
 ## OAuth PKCE (browser applications)
 
-Browser-based applications use OAuth PKCE via `@dataforge/oauth`. No client secret is required.
+Browser-based applications use OAuth PKCE via `@ontologie/oauth`. No client secret is required.
 
 ```typescript
-import { createOAuthClient } from '@dataforge/oauth';
+import { createOAuthClient } from '@ontologie/oauth';
 
 const client = createOAuthClient({
   clientId: 'your-app-id',

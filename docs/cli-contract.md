@@ -90,7 +90,7 @@ Examples:
 dataforge schema describe --format json
 dataforge query Contract --filter-json '{"status":{"eq":"pending_review"}}' --limit 20 --format json
 dataforge actions run Contract.approve con_001 --dry-run --format json
-dataforge actions run Contract.approve con_001 --apply-plan plan_xyz --idempotency-key key_001 --format json
+dataforge actions run Contract.approve con_001 --apply-plan plan_xyz --plan-hash <hash> --idempotency-key key_001 --format json
 dataforge plan inspect plan_xyz --format markdown
 dataforge graph neighbors con_001 --format json
 dataforge search "Acme" --format json
@@ -113,7 +113,7 @@ dataforge usage me --format json
 | `schema describe` | List all object types, link types, enums |
 | `schema diff` | Show pending changes vs deployed |
 | `schema push --dry-run` | Preview schema change as a plan |
-| `schema push --apply-plan <id>` | Apply schema change |
+| `schema push --yes` | Apply schema change after `schema push --dry-run` |
 
 ### Query
 
@@ -130,7 +130,7 @@ dataforge usage me --format json
 |---------|---------|
 | `actions describe <key>` | Show action definition, preconditions, inputs |
 | `actions run <key> <id> --dry-run` | Create a signed plan |
-| `actions run <key> <id> --apply-plan <planId>` | Apply the plan |
+| `actions run <key> <id> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key>` | Apply the plan |
 
 ### Plans
 
@@ -173,7 +173,8 @@ dataforge usage me --format json
 | `--limit <n>` | Pagination limit |
 | `--offset <n>` | Pagination offset |
 | `--dry-run` | Preview without mutation |
-| `--apply-plan <id>` | Apply a signed plan |
+| `--apply-plan <id>` | Apply a signed plan; use with `--plan-hash` and `--idempotency-key` |
+| `--plan-hash <hash>` | Verify the dry-run/inspect plan hash at apply time |
 | `--idempotency-key <key>` | Unique key for apply |
 | `--workspace <id>` | Target workspace |
 | `--profile <name>` | Named configuration profile |

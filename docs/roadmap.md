@@ -22,6 +22,15 @@ The core agent safety loop is complete and stable:
 - DataForge Units (DFU) billing with budget controls
 - 5 pricing tiers (Local Free through Enterprise)
 
+Commercialisation status:
+
+| Gate | Status |
+|------|--------|
+| BaaS signed-plan loop | Stable commercial offer when staging public use-case, edge, proof, and daily golden-path gates are green |
+| Self-serve billing | Self-serve billing is staging-ready, not Stable for production until live Stripe prices, webhook secret, and operator approval are complete |
+| API cloud complete | Separate track; broad API endpoint coverage is not the stable BaaS contract |
+| MCP adapter | Preview; MCP never has more mutation power than CLI/API |
+
 ---
 
 ## Next: V1.1
@@ -46,12 +55,12 @@ V1.1 items are declared and visible in V1 (schema, plans, audit). Runtime enforc
 
 | Feature | Status |
 |---------|--------|
-| MCP adapter (`@dataforge/mcp`) | Available, Preview stability |
+| MCP adapter (`@ontologie/mcp`) | Available, Preview stability |
 | Semantic search | Available on Cloud Runtime+ |
 | Deep graph traversal (depth > 1) | Available |
 | Aggregate queries | Available |
 | Batch/bulk operations | Available |
-| Subscriptions (real-time) | Available |
+| Subscriptions (real-time) | Preview; not required by the public quickstart/KPI |
 
 Preview features are documented and supported best-effort. They may change in minor versions.
 
@@ -62,7 +71,7 @@ Preview features are documented and supported best-effort. They may change in mi
 | Feature | Description |
 |---------|-------------|
 | MCP Stable | Promote MCP adapter to Stable with full compatibility guarantee |
-| Self-serve billing | Self-serve DFU pack purchase and plan management |
+| Production self-serve billing | Promote prepaid DFU pack purchase and plan management after Stripe live go/no-go |
 | SOC 2 certification | Formal compliance certification |
 | Multi-agent safety | Extending the safety model to multi-agent scenarios |
 

@@ -135,7 +135,7 @@ Allowed commands:
 - dataforge actions describe Contact.updateEmail --format json
 - dataforge actions run Contact.updateEmail <contactId> --input-json '{"email":"<correct>","reason":"<evidence>"}' --dry-run --format json
 - dataforge plan inspect <planId> --format markdown
-- dataforge actions run Contact.updateEmail <contactId> --apply-plan <planId> --idempotency-key <key> --format json
+- dataforge actions run Contact.updateEmail <contactId> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
 
 Forbidden:
 - Do not delete records.
@@ -176,6 +176,7 @@ dataforge plan inspect <planId> --format markdown
 # 6. Apply
 dataforge actions run Contact.updateEmail <contactId> \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key update-email-<contactId>-001 \
   --format json
 ```

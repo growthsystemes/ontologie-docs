@@ -121,7 +121,7 @@ Allowed commands:
 - dataforge actions describe Vendor.approve --format json
 - dataforge actions run Vendor.approve <vendorId> --input-json '{"comment":"<reason>"}' --dry-run --format json
 - dataforge plan inspect <planId> --format markdown
-- dataforge actions run Vendor.approve <vendorId> --apply-plan <planId> --idempotency-key <key> --format json
+- dataforge actions run Vendor.approve <vendorId> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
 
 Forbidden:
 - Do not approve vendors with missing required documents.
@@ -165,6 +165,7 @@ dataforge plan inspect <planId> --format markdown
 # 7. Apply
 dataforge actions run Vendor.approve <vendorId> \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key approve-vendor-<vendorId>-001 \
   --format json
 ```

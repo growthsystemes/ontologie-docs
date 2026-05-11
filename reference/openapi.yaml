@@ -73,7 +73,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Envelope'
 
-  /api/v1/actions/describe/{actionKey}:
+  /api/v1/actions/{actionKey}/describe:
     get:
       operationId: actionsDescribe
       summary: Describe an action definition
@@ -93,52 +93,88 @@ paths:
               schema:
                 $ref: '#/components/schemas/Envelope'
 
-  /api/v1/actions/run:
+  /api/v1/actions/{actionKey}/dry-run:
     post:
-      operationId: actionsRun
-      summary: Execute an action (dry-run or apply-plan)
+      operationId: actionsDryRun
+      summary: Create a signed action plan without mutating state
       tags: [Actions]
+      parameters:
+        - name: actionKey
+          in: path
+          required: true
+          schema:
+            type: string
+          example: Contract.approve
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [actionKey, targetId]
+              required: [targetId]
               properties:
-                actionKey:
-                  type: string
-                  example: Contract.approve
                 targetId:
                   type: string
                   example: con_001
-                input:
-                  type: object
-                dryRun:
-                  type: boolean
-                  default: false
-                applyPlan:
+                comment:
                   type: string
-                  description: Plan ID to apply
-                idempotencyKey:
-                  type: string
-                  description: Required when applyPlan is set
+                  description: Action-specific input fields are accepted alongside targetId.
       responses:
         '200':
-          description: Action result or plan artifact
+          description: Signed plan artifact
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+        '429':
+          description: Rate limited or budget exceeded
+
+  /api/v1/actions/{actionKey}/invoke:
+    post:
+      operationId: actionsInvoke
+      summary: Apply a previously signed action plan
+      tags: [Actions]
+      parameters:
+        - name: actionKey
+          in: path
+          required: true
+          schema:
+            type: string
+          example: Contract.approve
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetId, planId, planHash]
+              properties:
+                targetId:
+                  type: string
+                planId:
+                  type: string
+                planHash:
+                  type: string
+                riskAcknowledged:
+                  type: boolean
+                confirmed:
+                  type: boolean
+      responses:
+        '200':
+          description: Action result
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Envelope'
         '409':
-          description: Plan conflict (expired, version mismatch, etc.)
+          description: Plan conflict (expired, version mismatch, already applied, etc.)
         '429':
           description: Rate limited or budget exceeded
 
   /api/v1/plans/{planId}:
     get:
-      operationId: planInspect
-      summary: Inspect a plan artifact
+      operationId: planGet
+      summary: Get a plan artifact
       tags: [Plans]
       parameters:
         - name: planId
@@ -153,6 +189,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Envelope'
+
+  /api/v1/plans/{planId}/inspect:
+    get:
+      operationId: planInspect
+      summary: Inspect a plan artifact
+      tags: [Plans]
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, markdown]
+            default: json
+      responses:
+        '200':
+          description: Human-readable or JSON plan inspection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+            text/markdown:
+              schema:
+                type: string
 
   /api/v1/plans/{planId}/verify:
     post:

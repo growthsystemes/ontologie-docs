@@ -128,7 +128,7 @@ Allowed commands:
 - dataforge actions describe Opportunity.moveStage --format json
 - dataforge actions run Opportunity.moveStage <id> --input-json '{"stage":"closed_lost","reason":"<reason>"}' --dry-run --format json
 - dataforge plan inspect <planId> --format markdown
-- dataforge actions run Opportunity.moveStage <id> --apply-plan <planId> --idempotency-key <key> --format json
+- dataforge actions run Opportunity.moveStage <id> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
 
 Forbidden:
 - Do not use generic CRM writes.
@@ -164,6 +164,7 @@ dataforge plan inspect <planId> --format markdown
 # 5. Apply
 dataforge actions run Opportunity.moveStage <opportunityId> \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key move-stage-<opportunityId>-001 \
   --format json
 ```

@@ -44,7 +44,7 @@ dataforge query Contract --filter-json '{"status":{"eq":"pending_review"}}' --fo
 dataforge actions describe Contract.approve --format json
 dataforge actions run Contract.approve con_001 --input-json '{"comment":"Budget verified"}' --dry-run --format json
 dataforge plan inspect <planId> --format markdown
-dataforge actions run Contract.approve con_001 --apply-plan <planId> --idempotency-key approve-con-001-001 --format json
+dataforge actions run Contract.approve con_001 --apply-plan <planId> --plan-hash <hash> --idempotency-key approve-con-001-001 --format json
 
 # 4. Verify the change
 dataforge query Contract --filter-json '{"reference":{"eq":"CTR-2024-001"}}' --format json
@@ -59,5 +59,5 @@ dataforge query Contract --filter-json '{"reference":{"eq":"CTR-2024-001"}}' --f
 3. `actions describe` shows preconditions (`status == pending_review`), required role (`manager`), execution mode (`twin_apply`)
 4. `--dry-run` returns a plan artifact (unsigned mock locally, Ed25519-signed in Cloud) with the structural diff: `status: "pending_review" -> "approved"`
 5. `plan inspect` shows the plan details in human-readable markdown
-6. `--apply-plan` executes the plan, increments the version, records an audit event
+6. `--apply-plan` with `--plan-hash` and an idempotency key executes the plan, increments the version, records an audit event
 7. Post-apply query shows `status: "approved"`, `approvedAt` populated

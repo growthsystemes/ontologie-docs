@@ -24,8 +24,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This project a
 
 ### Stability
 - CLI core commands: **Stable**
-- SDK client (`@dataforge/sdk-client`): **Stable**
-- MCP adapter (`@dataforge/mcp`): **Preview**
+- SDK client (`@ontologie/sdk-client`): **Stable**
+- MCP adapter (`@ontologie/mcp`): **Preview**
 - Execution mode enforcement (`human_handoff`, `workflow_handoff`, `external_commit`): **Declared, V1.1 enforcement**
 
 ---

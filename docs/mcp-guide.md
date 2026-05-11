@@ -2,7 +2,7 @@
 
 **Stability: Preview**
 
-The MCP adapter (`@dataforge/mcp`) projects the CLI contract into MCP-compatible clients. The CLI remains the stable agent contract; MCP is a convenience surface for toolchains that speak MCP natively.
+The MCP adapter (`@ontologie/mcp`) projects the CLI contract into MCP-compatible clients. The CLI remains the stable agent contract; MCP is a convenience surface for toolchains that speak MCP natively.
 
 ---
 
@@ -15,7 +15,7 @@ MCP (Model Context Protocol) lets AI agents discover and invoke tools without ex
 ## Install
 
 ```bash
-npm install @dataforge/mcp
+npm install @ontologie/mcp
 ```
 
 ---
@@ -29,7 +29,7 @@ npm install @dataforge/mcp
   "mcpServers": {
     "ontologie": {
       "command": "npx",
-      "args": ["@dataforge/mcp", "--allow-read", "--allow-dry-run"],
+      "args": ["@ontologie/mcp", "--allow-read", "--allow-dry-run"],
       "env": {
         "DATAFORGE_API_KEY": "dfk_...",
         "DATAFORGE_WORKSPACE_ID": "ws_..."
@@ -67,7 +67,7 @@ When connected, the MCP adapter exposes tools matching CLI commands:
 | `ontology_actions_dry_run` | `actions run --dry-run` | dry-run |
 | `ontology_plan_inspect` | `plan inspect` | dry-run |
 | `ontology_plan_verify` | `plan verify` | dry-run |
-| `ontology_actions_apply` | `actions run --apply-plan` | write |
+| `ontology_actions_apply` | `actions run --apply-plan --plan-hash --idempotency-key` | write |
 | `ontology_schema_push` | `schema push` | write |
 | `ontology_import` | `import` | write |
 
@@ -82,6 +82,8 @@ The MCP adapter enforces identical safety rules as the CLI:
 - Plans require dry-run before apply
 - Idempotency keys are required for write operations
 - Budget caps and rate limits apply
+- Generated tool catalogs are validated before being written: every mutation tool must declare required scopes, destructive tools cannot be marked read-only, and routing examples cannot contain malformed fragments.
+- Sensitive execution surfaces such as `codemode_execute` and workflow start tools must declare explicit write or execution scopes.
 
 If the CLI rejects an operation, MCP rejects it too. There is no "extra power" through MCP.
 
@@ -93,7 +95,7 @@ The MCP adapter can run against the local mock server:
 
 ```bash
 dataforge dev &
-npx @dataforge/mcp --allow-read --allow-dry-run --local
+npx @ontologie/mcp --allow-read --allow-dry-run --local
 ```
 
 In local mode, queries and dry-runs work against the mock server. No cloud connection needed.
@@ -141,8 +143,8 @@ Write tools (`--allow-write`) require Cloud Runtime+ with the Governance add-on.
 Use `--profile` to switch between configurations:
 
 ```bash
-npx @dataforge/mcp --profile staging --allow-read --allow-dry-run
-npx @dataforge/mcp --profile production --allow-read
+npx @ontologie/mcp --profile staging --allow-read --allow-dry-run
+npx @ontologie/mcp --profile production --allow-read
 ```
 
 Profiles map to workspace + API key pairs in `~/.dataforge/config.json`.

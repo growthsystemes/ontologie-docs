@@ -21,6 +21,7 @@ The core pattern is always the same:
 | [Contract approval](./contract-approval.md) | Legal / Sales ops | Simple (single object, single action) |
 | [Vendor onboarding](./vendor-onboarding.md) | Procurement | Medium (linked objects, document checks) |
 | [Customer refund approval](./refund-approval.md) | Support / Finance | Medium (amount policies, linked orders) |
+| [Customer file 360](./customer-file-360.md) | Customer ops / CRM | Medium (PII, notes, documents, duplicate merge) |
 | [CRM pipeline governance](./crm-pipeline.md) | Revenue ops | Medium (multiple action types, bulk awareness) |
 | [Finance audit evidence](./finance-audit.md) | Finance / Audit | Medium (proposal mode, evidence linking) |
 | [IT access request](./it-access-request.md) | IT / Security | Medium (expiry rules, risk tiers) |
@@ -62,6 +63,7 @@ dataforge actions run <key> <id> --dry-run       # Create a signed plan
 dataforge plan inspect <planId> --format markdown # Inspect the plan
 dataforge actions run <key> <id> \
   --apply-plan <planId> \
+  --plan-hash <hash> \
   --idempotency-key <key> --format json          # Apply the plan
 ```
 
@@ -80,3 +82,36 @@ See [CLI contract](../cli-contract.md) for the full specification.
 | `external_commit` | Commit to a source system via connector | Future |
 
 All V1 demos use `twin_apply` or `plan_only`. Future modes are documented but not promised.
+
+---
+
+## Protocol notes
+
+### Idempotency
+
+All POST mutations require an `Idempotency-Key` header when using API key auth.
+The CLI and SDK generate this automatically. Direct API consumers must provide it:
+
+```
+Idempotency-Key: approve-contract-<contractId>-001
+```
+
+### Apply protocol
+
+When applying a plan via `POST /api/v1/actions/{actionKey}/invoke`, the body must contain **only** the plan reference:
+
+```json
+{ "planId": "...", "planHash": "..." }
+```
+
+Do not include `targetId`, `input`, or other fields — the backend rejects them with `APPLY_PLAN_INPUT_NOT_ALLOWED`. All inputs were already signed during the dry-run.
+
+### Verify protocol
+
+The verify step (`POST /api/v1/plans/{planId}/verify`) requires explicit confirmation:
+
+```json
+{ "riskAcknowledged": true, "confirmed": true }
+```
+
+Without these flags, the response may return `canApply: false`.

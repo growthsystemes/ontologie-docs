@@ -108,7 +108,7 @@ Use `--limit` and `--offset` for offset-based pagination. For large result sets,
 ## SDK query
 
 ```typescript
-import { createClient } from '@dataforge/sdk-client';
+import { createClient } from '@ontologie/sdk-client';
 
 const client = createClient({
   apiKey: process.env.DATAFORGE_API_KEY!,
@@ -176,14 +176,14 @@ dataforge search "contracts needing urgent approval" --mode semantic --format js
 
 ```bash
 dataforge graph neighbors con_001 --format json
-dataforge graph neighbors con_001 --direction outgoing --format json
-dataforge graph neighbors con_001 --link-type belongs_to --format json
+dataforge graph neighbors con_001 --direction outbound --format json
+dataforge graph neighbors con_001 --edge-types belongs_to --format json
 ```
 
 ```typescript
 const neighbors = await client.graph.neighbors('con_001', {
-  direction: 'outgoing',
-  linkType: 'belongs_to',
+  direction: 'outbound',
+  edgeTypes: ['belongs_to'],
 });
 ```
 

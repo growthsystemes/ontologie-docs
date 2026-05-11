@@ -1,6 +1,6 @@
 # Schema DSL Reference
 
-Complete API reference for the `@dataforge/schema` package.
+Complete API reference for the `@ontologie/schema` package.
 
 ---
 
@@ -10,7 +10,7 @@ Complete API reference for the `@dataforge/schema` package.
 import {
   objectType, string, number, date, boolean, json,
   enumType, link, action, role, now, compile,
-} from '@dataforge/schema';
+} from '@ontologie/schema';
 ```
 
 ---
@@ -190,7 +190,7 @@ Available inside `.when()`:
 import {
   objectType, string, number, date, enumType,
   link, action, role, now, compile,
-} from '@dataforge/schema';
+} from '@ontologie/schema';
 
 const ContractStatus = enumType('ContractStatus', [
   'draft', 'pending_review', 'approved', 'rejected',
