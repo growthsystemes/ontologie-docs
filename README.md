@@ -1,10 +1,16 @@
 # Ontologie
 
-**The governed backend for AI agents — built by [Growthsystemes](https://www.growthsystemes.com/).**
+**Ontologie is the governed operational layer for AI agents, built by [Growthsystemes](https://www.growthsystemes.com/).**
 
-Typed business objects, graph context, bounded actions, dry-runs, signed plans, and audit — without exposing your database.
+**Model your business as a governed operational twin that Claude Code, Codex, MCP clients and app backends can query and modify only through signed plans.**
 
-The product is Ontologie. The CLI command and npm package namespace are `dataforge`.
+It turns business operations into an **agent-safe operational twin**: typed objects, states, links, policies, bounded actions, dry runs, signed plans, and audit. Any AI agent that can use tools, run commands, or call APIs can use Ontologie.
+
+Agents can **discover the model**, **query live operational state**, **understand allowed next steps**, and **apply only verified plans through governed paths**, without raw database access.
+
+**Free to model. Free to try in a hard-capped sandbox**. Paid to run live twins, governed signed plans and production governance.
+
+*The product is Ontologie. The agent and developer surface is `dataforge`: CLI, SDK, npm packages, and MCP adapter.*
 
 ---
 
@@ -57,7 +63,6 @@ dataforge actions run Contract.approve con_001 --dry-run --format json
 dataforge plan inspect <planId> --format markdown
 dataforge actions run Contract.approve con_001 \
   --apply-plan <planId> \
-  --plan-hash <hash> \
   --idempotency-key approve-con-001 \
   --format json
 ```
@@ -77,42 +82,13 @@ Every mutation follows the same loop:
 5. **Inspect / verify** the signed plan
 6. **Apply** the verified plan with an idempotency key
 
-```mermaid
-stateDiagram-v2
-  [*] --> Discover
-  Discover --> Query
-  Query --> Describe
-  Describe --> DryRun: preview mutation
-  DryRun --> Inspect
-  Inspect --> Verify
-  Verify --> Apply: idempotency key
-  Apply --> Audit
-  Audit --> [*]
-
-  DryRun --> [*]: no mutation, preview only
-  Verify --> [*]: rejects stale or invalid plans
-```
-
 At apply time, the runtime verifies actor, workspace, action, inputs, object versions, schema version, policy version, expiry, and idempotency before writing anything.
 
 ### Plan lifecycle
 
-```mermaid
-stateDiagram-v2
-  [*] --> Pending: dry-run creates plan
+Model the process → Query the twin → Create a signed plan → Inspect → Apply → Audit
 
-  Pending --> Applied: apply-plan + idempotency key
-  Pending --> Revoked: revoke
-  Pending --> Expired: TTL exceeded
-  Pending --> Rejected: actor / workspace / policy / version mismatch
-
-  Applied --> [*]
-  Revoked --> [*]
-  Expired --> [*]
-
-  Applied --> Applied: same plan + same key = replay
-  Applied --> Rejected: same plan + different key
-```
+Agents do not mutate business state directly. Every change is prepared as a signed plan that can be inspected, verified and applied through governed paths.
 
 ---
 
