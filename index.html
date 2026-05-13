@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ontologie — The governed operational twin for AI agents</title>
+  <meta name="description" content="Model your business as a governed operational twin. Agents discover, query, plan, and apply changes through signed plans — not raw database access.">
+  <meta name="keywords" content="AI agents, operational twin, signed plans, governance, ontology, business automation, agent safety">
+  <meta property="og:title" content="Ontologie — The governed operational twin for AI agents">
+  <meta property="og:description" content="Model your business as a governed operational twin. Agents discover, query, plan, and apply changes through signed plans.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ontologie-growthsystemes.com">
+  <link rel="canonical" href="https://ontologie-growthsystemes.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">Ontologie</a>
+      <div class="nav-links">
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/QUICKSTART.md">Quickstart</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/index.md">Use cases</a>
+        <a href="#pricing">Pricing</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs" class="nav-github">GitHub</a>
+        <a href="https://ontologie-growthsystemes.com/onboarding/checkout" class="btn btn-primary btn-sm">Try free</a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>The governed operational twin<br>for AI agents</h1>
+      <p class="hero-sub">
+        Model your business as typed objects, states, links, policies and allowed actions.
+        Agents discover the model, query the live twin, propose signed plans, and apply them through governed paths.
+      </p>
+      <div class="hero-cta">
+        <a href="#demo" class="btn btn-primary">See it in action</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs" class="btn btn-outline">Read the docs</a>
+      </div>
+      <p class="hero-note">Free to model. Free sandbox (10K DFU, no card). Paid for production governance.</p>
+    </div>
+  </section>
+
+  <!-- Problem -->
+  <section class="section bg-light">
+    <div class="container">
+      <h2>Why raw agent access is unsafe</h2>
+      <p class="section-sub">Without a governed runtime, an agent with database or API access might:</p>
+      <div class="grid-4">
+        <div class="problem-card">
+          <div class="problem-icon">
+            <svg width="24" height="24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3>Mutate directly</h3>
+          <p>Write to any field, bypass status transitions, ignore business rules.</p>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon">
+            <svg width="24" height="24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3>Act on stale data</h3>
+          <p>Approve a record that changed since the agent last read it.</p>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon">
+            <svg width="24" height="24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3>Skip policy checks</h3>
+          <p>Bypass role requirements, amount limits, or required approvals.</p>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon">
+            <svg width="24" height="24" fill="none" stroke="#EF4444" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <h3>Leave no proof</h3>
+          <p>No audit trail linking the decision to the policy, actor, and data version.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Safety Loop -->
+  <section class="section">
+    <div class="container">
+      <h2>The safety loop</h2>
+      <p class="section-sub">Every mutation follows the same governed path. No exceptions.</p>
+      <div class="loop">
+        <div class="loop-step">
+          <span class="loop-num">1</span>
+          <h3>Discover</h3>
+          <p>Load the typed business model: objects, states, links, actions, policies.</p>
+        </div>
+        <div class="loop-arrow">&rarr;</div>
+        <div class="loop-step">
+          <span class="loop-num">2</span>
+          <h3>Query</h3>
+          <p>Find live business objects in the operational twin. Bounded, paginated, version-tracked.</p>
+        </div>
+        <div class="loop-arrow">&rarr;</div>
+        <div class="loop-step">
+          <span class="loop-num">3</span>
+          <h3>Understand</h3>
+          <p>Inspect the action: preconditions, required inputs, execution mode, risk level.</p>
+        </div>
+        <div class="loop-arrow">&rarr;</div>
+        <div class="loop-step">
+          <span class="loop-num">4</span>
+          <h3>Plan</h3>
+          <p>Dry-run the action. Get a signed plan with the exact before/after diff.</p>
+        </div>
+        <div class="loop-arrow">&rarr;</div>
+        <div class="loop-step">
+          <span class="loop-num">5</span>
+          <h3>Inspect</h3>
+          <p>Review the plan: effects, policy checks, cost estimate, Ed25519 signature.</p>
+        </div>
+        <div class="loop-arrow">&rarr;</div>
+        <div class="loop-step">
+          <span class="loop-num">6</span>
+          <h3>Apply</h3>
+          <p>Apply the verified plan with an idempotency key. 27 server-side checks before write.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo -->
+  <section id="demo" class="section bg-dark">
+    <div class="container">
+      <h2>See it work</h2>
+      <p class="section-sub light">An AI agent approves a contract through the full safety loop. Every command is real.</p>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">Terminal</span>
+        </div>
+        <pre><code><span class="t-comment"># Scaffold and start the local mock server</span>
+<span class="t-prompt">$</span> npx create-ontologie-app my-demo --template contract-review
+<span class="t-prompt">$</span> cd my-demo && dataforge dev
+
+<span class="t-comment"># Discover the model</span>
+<span class="t-prompt">$</span> dataforge schema describe --format json
+<span class="t-output">{ "objectTypes": ["Contract", "Client"], "actions": ["Contract.approve", ...] }</span>
+
+<span class="t-comment"># Find pending contracts</span>
+<span class="t-prompt">$</span> dataforge query Contract --filter-json '{"status":{"eq":"pending_review"}}' --format json
+<span class="t-output">{ "data": [{ "id": "con_001", "reference": "CTR-2024-001", "amount": 45000, "status": "pending_review" }] }</span>
+
+<span class="t-comment"># What does approve do?</span>
+<span class="t-prompt">$</span> dataforge actions describe Contract.approve --format json
+<span class="t-output">{ "executionMode": "twin_apply", "riskLevel": "medium", "preconditions": ["status eq pending_review"] }</span>
+
+<span class="t-comment"># Dry-run: create a signed plan (no mutation yet)</span>
+<span class="t-prompt">$</span> dataforge actions run Contract.approve con_001 \
+    --input-json '{"comment":"Budget verified by finance"}' \
+    --dry-run --format json
+<span class="t-output">{ "planId": "845f9bf5-...", "hash": "sha256:7f3a...", "signature": "ed25519:...",
+  "effects": [{ "before": { "status": "pending_review" }, "after": { "status": "approved" } }],
+  "policyChecks": [{ "check": "precondition_status", "passed": true }, ...] }</span>
+
+<span class="t-comment"># Inspect the plan in human-readable form</span>
+<span class="t-prompt">$</span> dataforge plan inspect 845f9bf5-... --plan-format markdown
+<span class="t-output">Plan: 845f9bf5-...  |  Action: Contract.approve  |  Risk: medium
+| Field     | Before           | After      |
+| status    | pending_review   | approved   |
+| approvedAt| null             | 2026-05-13 |</span>
+
+<span class="t-comment"># Apply the verified plan</span>
+<span class="t-prompt">$</span> dataforge actions run Contract.approve con_001 \
+    --apply-plan 845f9bf5-... \
+    --plan-hash sha256:7f3a... \
+    --idempotency-key approve-con-001-001 \
+    --format json
+<span class="t-output">{ "ok": true, "data": { "status": "approved", "version": 3, "approvedAt": "2026-05-13T..." } }</span></code></pre>
+      </div>
+      <div class="demo-cta">
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/contract-approval.md" class="btn btn-primary">Full walkthrough</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/QUICKSTART.md" class="btn btn-outline-light">Quickstart guide</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Three Promises -->
+  <section class="section">
+    <div class="container">
+      <h2>Three promises</h2>
+      <p class="section-sub">Every V1 capability answers one of these questions.</p>
+      <div class="grid-3">
+        <div class="promise-card">
+          <div class="promise-icon model"></div>
+          <h3>Make the business legible</h3>
+          <p>The agent understands objects, states, links, actions and rules through a typed schema DSL. Not a prompt. Not a wiki page.</p>
+          <code class="promise-code">dataforge schema describe</code>
+        </div>
+        <div class="promise-card">
+          <div class="promise-icon query"></div>
+          <h3>Make the state queryable</h3>
+          <p>The agent reads the live operational twin without raw database access. Bounded queries, graph traversal, version tracking.</p>
+          <code class="promise-code">dataforge query Contract</code>
+        </div>
+        <div class="promise-card">
+          <div class="promise-icon govern"></div>
+          <h3>Make changes governed</h3>
+          <p>Every mutation is a signed plan: inspectable, verifiable, policy-checked, auditable, and bound to the current model version.</p>
+          <code class="promise-code">dataforge actions run --dry-run</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Model -->
+  <section class="section bg-light">
+    <div class="container">
+      <h2>Define your model in TypeScript</h2>
+      <p class="section-sub">A schema DSL that compiles to a versioned manifest. Fields protected by <code>mutableBy</code> cannot be changed through raw writes.</p>
+      <div class="code-split">
+        <div class="code-block">
+          <div class="code-header">dataforge.schema.ts</div>
+          <pre><code><span class="k">const</span> ContractStatus = <span class="fn">enumType</span>(<span class="s">'ContractStatus'</span>, [
+  <span class="s">'draft'</span>, <span class="s">'pending_review'</span>, <span class="s">'approved'</span>, <span class="s">'rejected'</span>,
+]);
+
+<span class="k">const</span> Contract = <span class="fn">objectType</span>(<span class="s">'Contract'</span>, {
+  reference: <span class="fn">string</span>().<span class="fn">required</span>().<span class="fn">indexed</span>(),
+  amount:    <span class="fn">number</span>(),
+  status:    ContractStatus.<span class="fn">default</span>(<span class="s">'draft'</span>)
+    .<span class="fn">mutableBy</span>([<span class="s">'Contract.approve'</span>, <span class="s">'Contract.reject'</span>]),
+  approvedAt: <span class="fn">date</span>().<span class="fn">optional</span>()
+    .<span class="fn">mutableBy</span>([<span class="s">'Contract.approve'</span>]),
+});
+
+<span class="k">const</span> approveContract = <span class="fn">action</span>(<span class="s">'approve'</span>)
+  .<span class="fn">on</span>(Contract)
+  .<span class="fn">executionMode</span>(<span class="s">'twin_apply'</span>)
+  .<span class="fn">riskLevel</span>(<span class="s">'medium'</span>)
+  .<span class="fn">requires</span>(<span class="fn">role</span>(<span class="s">'manager'</span>))
+  .<span class="fn">when</span>(c => c.status.<span class="fn">eq</span>(<span class="s">'pending_review'</span>))
+  .<span class="fn">set</span>({ status: <span class="s">'approved'</span>, approvedAt: <span class="fn">now</span>() });</code></pre>
+        </div>
+        <div class="code-explain">
+          <div class="explain-item">
+            <h4>Typed model</h4>
+            <p><code>Contract</code> is a declared ObjectType with constrained status values, not a free-form row.</p>
+          </div>
+          <div class="explain-item">
+            <h4>Write protection</h4>
+            <p><code>mutableBy</code> locks fields to specific actions. The server rejects unauthorized writes with <code>WRITE_POLICY_VIOLATION</code>.</p>
+          </div>
+          <div class="explain-item">
+            <h4>Bounded action</h4>
+            <p><code>Contract.approve</code> declares preconditions, effects, execution mode, and risk level. The runtime enforces all of them.</p>
+          </div>
+          <div class="explain-item">
+            <h4>Signed plan</h4>
+            <p>A dry-run produces a plan artifact with the exact diff, Ed25519 signature, policy checks, and expiry. Apply requires the same hash.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Use Cases -->
+  <section class="section">
+    <div class="container">
+      <h2>Real-world use cases</h2>
+      <p class="section-sub">The same safety loop works across domains. Start with contract approval, then adapt.</p>
+      <div class="grid-4 uc-grid">
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/contract-approval.md" class="uc-card uc-canonical">
+          <span class="uc-badge">Start here</span>
+          <h3>Contract approval</h3>
+          <span class="uc-domain">Legal / Sales ops</span>
+          <p>Executable demo with failure cases and full proof. The canonical reference.</p>
+        </a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/vendor-onboarding.md" class="uc-card">
+          <h3>Vendor onboarding</h3>
+          <span class="uc-domain">Procurement</span>
+          <p>Document checks, linked risk assessments, 5 actions.</p>
+        </a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/refund-approval.md" class="uc-card">
+          <h3>Customer refund</h3>
+          <span class="uc-domain">Support / Finance</span>
+          <p>Amount policies, linked orders, fraud prevention.</p>
+        </a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/crm-pipeline.md" class="uc-card">
+          <h3>CRM pipeline</h3>
+          <span class="uc-domain">Revenue ops</span>
+          <p>Multi-object batch reviews with per-record diffs.</p>
+        </a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/finance-audit.md" class="uc-card">
+          <h3>Finance audit</h3>
+          <span class="uc-domain">Finance / Audit</span>
+          <p><code>plan_only</code> mode: proposals without mutation.</p>
+        </a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/it-access-request.md" class="uc-card">
+          <h3>IT access request</h3>
+          <span class="uc-domain">IT / Security</span>
+          <p>Expiry rules, risk tier routing, manager approval.</p>
+        </a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/data-quality.md" class="uc-card">
+          <h3>Data quality</h3>
+          <span class="uc-domain">Operations / Data</span>
+          <p>Two-step pattern: correct then resolve.</p>
+        </a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/customer-file-360.md" class="uc-card">
+          <h3>Customer file 360</h3>
+          <span class="uc-domain">Customer ops</span>
+          <p>PII, GDPR, 11 actions, multi-step erasure chain.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Surfaces -->
+  <section class="section bg-light">
+    <div class="container">
+      <h2>One model, three surfaces</h2>
+      <p class="section-sub">CLI for agents. SDK for apps. MCP for agent clients. Same policy. Same plans. Same audit.</p>
+      <div class="grid-3">
+        <div class="surface-card">
+          <h3>CLI</h3>
+          <span class="surface-tag stable">Stable</span>
+          <p>The canonical agent contract. Deterministic JSON output, 13 exit codes, structured errors.</p>
+          <pre><code>npm install -g @ontologie/cli</code></pre>
+        </div>
+        <div class="surface-card">
+          <h3>SDK</h3>
+          <span class="surface-tag stable">Stable</span>
+          <p>TypeScript type-safe client. ObjectSet queries, action builders, plan lifecycle.</p>
+          <pre><code>npm install @ontologie/sdk-client \
+  @ontologie/schema</code></pre>
+        </div>
+        <div class="surface-card">
+          <h3>MCP</h3>
+          <span class="surface-tag preview">Preview</span>
+          <p>Adapter for Claude Code, Codex, and MCP clients. Projects CLI capabilities as tools.</p>
+          <pre><code>npm install @ontologie/mcp</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="section">
+    <div class="container">
+      <h2>Pricing</h2>
+      <p class="section-sub">Free to model. Free to try. Paid to run production governance.</p>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <h3>Local Free</h3>
+          <div class="price">$0</div>
+          <p class="price-desc">No account needed</p>
+          <ul>
+            <li>Schema design and type generation</li>
+            <li>Mock dry-runs and queries</li>
+            <li>Agent instruction files</li>
+            <li>CLI and SDK (MIT)</li>
+          </ul>
+          <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/QUICKSTART.md" class="btn btn-outline btn-block">Get started</a>
+        </div>
+        <div class="price-card">
+          <h3>Cloud Sandbox</h3>
+          <div class="price">$0</div>
+          <p class="price-desc">No card required</p>
+          <ul>
+            <li>Persistent operational twin</li>
+            <li>10,000 DFU/month hard cap</li>
+            <li>Signed plans (Ed25519)</li>
+            <li>No overages, no surprise bills</li>
+          </ul>
+          <a href="https://ontologie-growthsystemes.com/onboarding/checkout" class="btn btn-primary btn-block">Try free</a>
+        </div>
+        <div class="price-card featured">
+          <span class="price-badge">Production</span>
+          <h3>Cloud Runtime</h3>
+          <div class="price">From $30</div>
+          <p class="price-desc">Prepaid DFU packs</p>
+          <ul>
+            <li>Everything in Sandbox</li>
+            <li>Budget controls and cost headers</li>
+            <li>Production workspaces</li>
+            <li>Auto-recharge (opt-in)</li>
+          </ul>
+          <a href="https://ontologie-growthsystemes.com/onboarding/checkout" class="btn btn-primary btn-block">Buy DFU</a>
+        </div>
+        <div class="price-card">
+          <h3>Enterprise</h3>
+          <div class="price">Custom</div>
+          <p class="price-desc">Contract</p>
+          <ul>
+            <li>Everything in Runtime</li>
+            <li>RBAC, approvals, audit retention</li>
+            <li>SSO, SCIM, data residency</li>
+            <li>Dedicated support</li>
+          </ul>
+          <a href="mailto:contact@growthsystemes.com" class="btn btn-outline btn-block">Contact us</a>
+        </div>
+      </div>
+      <p class="pricing-note">
+        DFU = DataForge Unit. Each cloud operation consumes DFU: schema describe (1), query (2-5), dry-run (5), apply (5-45).
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/billing-and-limits.md">Full pricing details</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section class="section bg-dark">
+    <div class="container">
+      <h2>Get started in 60 seconds</h2>
+      <div class="install-grid">
+        <div class="install-block">
+          <h3>Option A: Scaffolder</h3>
+          <div class="terminal terminal-sm">
+            <pre><code><span class="t-prompt">$</span> npx create-ontologie-app my-project --template contract-review
+<span class="t-prompt">$</span> cd my-project && dataforge dev</code></pre>
+          </div>
+        </div>
+        <div class="install-block">
+          <h3>Option B: Global CLI</h3>
+          <div class="terminal terminal-sm">
+            <pre><code><span class="t-prompt">$</span> npm install -g @ontologie/cli
+<span class="t-prompt">$</span> dataforge init --template contract-review
+<span class="t-prompt">$</span> cd contract-review && dataforge dev</code></pre>
+          </div>
+        </div>
+      </div>
+      <p class="install-note">Works with Claude Code, Codex, any MCP client, and regular CLI/CI workflows.</p>
+    </div>
+  </section>
+
+  <!-- Security -->
+  <section class="section">
+    <div class="container">
+      <h2>Safety is not a feature. It is the architecture.</h2>
+      <div class="grid-3">
+        <div class="security-item">
+          <h4>No raw database access</h4>
+          <p>Agents discover a typed schema. They never see connection strings, SQL, or internal APIs.</p>
+        </div>
+        <div class="security-item">
+          <h4>Scoped API keys</h4>
+          <p>Server-side only. HMAC-SHA256 hashed. IP allowlist. Rate limited. Never in browser code.</p>
+        </div>
+        <div class="security-item">
+          <h4>Dry-run before mutation</h4>
+          <p>Every change is proposed as a signed plan before anything is written.</p>
+        </div>
+        <div class="security-item">
+          <h4>Server-side policy</h4>
+          <p>Per-field write control (<code>mutableBy</code>), role checks, preconditions, and 27 PlanGuard checks.</p>
+        </div>
+        <div class="security-item">
+          <h4>Idempotency keys</h4>
+          <p>Every apply requires a unique key. Replays return the cached result without re-mutation.</p>
+        </div>
+        <div class="security-item">
+          <h4>Append-only audit</h4>
+          <p>Every action records the plan, actor, principal type, request ID, and policy version.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-col">
+        <h4>Ontologie</h4>
+        <p>The governed operational twin for AI agents.</p>
+        <p class="footer-credit">Built by <a href="https://www.growthsystemes.com/">Growthsystemes</a></p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/QUICKSTART.md">Quickstart</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/use-cases/index.md">Use cases</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/cli-contract.md">CLI contract</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/sdk-guide.md">SDK guide</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/signed-plans-and-safety.md">Signed plans</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/billing-and-limits.md">Billing</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/SECURITY.md">Security</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/docs/faq.md">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="https://github.com/growthsystemes/ontologie-docs">GitHub</a>
+        <a href="https://www.npmjs.com/org/ontologie">npm</a>
+        <a href="https://github.com/growthsystemes/ontologie-docs/blob/main/CHANGELOG.md">Changelog</a>
+        <a href="mailto:contact@growthsystemes.com">Contact</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>MIT for SDK and CLI packages. Ontologie Cloud is a managed commercial service.</p>
+    </div>
+  </footer>
+</body>
+</html>
