@@ -1,52 +1,23 @@
 # Use case: CRM pipeline governance
 
-## Business situation
+> Revenue ops | 5 actions | [Run this demo](#run-this-demo)
 
-A revenue operations team wants an AI agent to review stale opportunities, move deals to the right stage, assign owners, and mark low-quality leads as disqualified.
+## Situation and risk
 
-The agent has useful context, but CRM state is business-critical. A bad bulk update can break forecasts, route accounts incorrectly, or erase important sales history.
+A revenue operations team wants an AI agent to review stale opportunities, move deals to the right stage, assign owners, and mark low-quality leads as disqualified. CRM state is business-critical — a bad bulk update can break forecasts, route accounts incorrectly, or erase sales history.
 
-Ontologie gives the agent declared actions such as `Opportunity.moveStage`, `Opportunity.assignOwner`, and `Lead.disqualify` instead of raw CRM writes.
+Without Ontologie, an agent might move many opportunities to the wrong stage, overwrite owner assignments, disqualify valid leads, apply stale recommendations after a sales rep updated the record, or leave no audit trail for forecast changes.
 
-## Why a normal agent interface is unsafe
-
-Without Ontologie, an agent might:
-
-- Move many opportunities to the wrong stage.
-- Overwrite owner assignments.
-- Disqualify valid leads.
-- Mutate fields that should only be changed by specific sales motions.
-- Apply stale recommendations after a sales rep updated the record.
-- Leave no clear audit trail for forecast changes.
-
-## What Ontologie adds
-
-- CRM objects are represented as typed operational state.
-- Stage, owner, and disqualification reason are protected by `mutableBy`.
-- Each state transition is a declared action.
-- Dry-run shows exactly which opportunity or lead would change.
-- Policy limits the number of objects touched per plan.
-- Stale object versions are rejected (OCC).
-- Every applied plan is auditable.
-
-## Model sketch
+## Model
 
 ```ts
 const OpportunityStage = enumType('OpportunityStage', [
-  'new',
-  'qualified',
-  'proposal',
-  'negotiation',
-  'closed_won',
-  'closed_lost',
-  'stale_review',
+  'new', 'qualified', 'proposal', 'negotiation',
+  'closed_won', 'closed_lost', 'stale_review',
 ]);
 
 const LeadStatus = enumType('LeadStatus', [
-  'new',
-  'working',
-  'qualified',
-  'disqualified',
+  'new', 'working', 'qualified', 'disqualified',
 ]);
 
 const Opportunity = objectType('Opportunity', {
@@ -78,7 +49,7 @@ const OpportunityToAccount = link('Opportunity', 'Account')
   .label('belongs_to_account');
 ```
 
-## Actions
+## Actions and policy
 
 | Action | Purpose | Execution mode |
 |--------|---------|----------------|
@@ -88,107 +59,38 @@ const OpportunityToAccount = link('Opportunity', 'Account')
 | `Lead.qualify` | Mark a lead as qualified | `twin_apply` |
 | `Lead.disqualify` | Mark a lead as disqualified with a reason | `twin_apply` |
 
-## Policy sketch
-
 ```json
 {
   "requireDryRunBeforeMutation": true,
   "forbidDelete": true,
   "maxObjectsTouched": 20,
   "allowedActions": [
-    "Opportunity.moveStage",
-    "Opportunity.assignOwner",
-    "Opportunity.markStale",
-    "Lead.qualify",
-    "Lead.disqualify"
+    "Opportunity.moveStage", "Opportunity.assignOwner", "Opportunity.markStale",
+    "Lead.qualify", "Lead.disqualify"
   ]
 }
 ```
 
-Business rules:
-
 - High-value opportunities require a manager role.
-- `closed_won` and `closed_lost` stages are restricted transitions.
-- Changes are applied one record per plan unless bulk apply is verified.
+- `closed_won` and `closed_lost` are restricted transitions.
 - Every disqualification requires a reason.
-- Direct writes to `stage`, `ownerEmail`, and `status` are forbidden.
 
-## Agent task card
+## Run this demo
 
-```
-Task: Clean CRM pipeline state safely.
-
-Goal:
-Apply only declared CRM state transitions after dry-run inspection.
-One record per plan unless bulk behavior is verified.
-
-Allowed commands:
-- dataforge schema describe --format json
-- dataforge query opportunity --filter-json '{"stage":{"eq":"stale_review"}}' --format json
-- dataforge actions describe Opportunity.moveStage --format json
-- dataforge actions run Opportunity.moveStage <id> --input-json '{"stage":"closed_lost","reason":"<reason>"}' --dry-run --format json
-- dataforge plan inspect <planId> --format markdown
-- dataforge actions run Opportunity.moveStage <id> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
-
-Forbidden:
-- Do not use generic CRM writes.
-- Do not update closed_won or closed_lost without explicit policy.
-- Do not mutate protected fields directly.
-
-Success criteria:
-- Only declared actions are applied.
-- Each plan has an exact diff.
-- Forecast-impacting changes are auditable.
-```
-
-## Demo script
+This use case follows the same safety loop as [contract approval](./contract-approval.md#try-it-now). The distinguishing feature is multi-object awareness: `maxObjectsTouched: 20` allows batch reviews, but each plan still shows the exact diff per record.
 
 ```bash
-# 1. Find stale opportunities
-dataforge query opportunity \
-  --filter-json '{"stage":{"eq":"stale_review"}}' \
-  --format json
-
-# 2. Describe the action
-dataforge actions describe Opportunity.moveStage --format json
-
-# 3. Dry-run
-dataforge actions run Opportunity.moveStage <opportunityId> \
-  --input-json '{"stage":"closed_lost","reason":"No activity for 120 days"}' \
-  --dry-run \
-  --format json
-
-# 4. Inspect
-dataforge plan inspect <planId> --format markdown
-
-# 5. Apply
-dataforge actions run Opportunity.moveStage <opportunityId> \
-  --apply-plan <planId> \
-  --plan-hash <hash> \
-  --idempotency-key move-stage-<opportunityId>-001 \
-  --format json
+dataforge init my-crm-demo --template contract-review
+cd my-crm-demo && dataforge dev
+# Adapt the schema, then: query -> describe -> dry-run -> inspect -> apply
 ```
 
-## What the user understands
+## Before / After
 
-**Before Ontologie:**
-
-> "The agent can update Salesforce or HubSpot records. It might make a mistake at CRM scale."
-
-**With Ontologie:**
-
-> "The agent can only perform declared CRM actions. Every stage or owner change is previewed, version-checked, policy-checked, and audited."
-
-## Proof produced
-
-- `planId` and `planHash`.
-- Opportunity or lead before/after diff.
-- Object version before and after.
-- Actor binding.
-- Policy version.
-- Idempotency key.
-- Audit event id.
+| Without Ontologie | With Ontologie |
+|---|---|
+| "The agent can update Salesforce records. It might make a mistake at CRM scale." | "Only declared CRM actions. Every stage or owner change is previewed, version-checked, policy-checked, and audited." |
 
 ## Scope note
 
-Ontologie acts as the governed operational twin for CRM state. Direct Salesforce or HubSpot writes require `external_commit` mode (future). For current demos, show governed changes in the twin and explain how teams reconcile with source systems.
+Ontologie acts as the governed operational twin for CRM state. Direct Salesforce or HubSpot writes require `external_commit` mode (future).

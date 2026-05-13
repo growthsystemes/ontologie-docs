@@ -1,14 +1,88 @@
 # Use case: Contract approval
 
+## What this demonstrates
+
+An AI agent approves a pending contract through the full Ontologie safety loop — in under 5 minutes, on your machine.
+
+- **Typed model**: `Contract` is a declared ObjectType with constrained status values, not a free-form row.
+- **Bounded action**: `Contract.approve` declares preconditions, effects, execution mode, and risk level.
+- **Signed plan**: a dry-run produces a plan artifact with the exact before/after diff.
+- **Verified apply**: apply requires the same plan hash, actor, current object version, and an idempotency key.
+- **Durable proof**: the resulting event is auditable with full provenance.
+
+---
+
+## Try it now
+
+```bash
+# Scaffold and start the local mock server
+npx create-ontologie-app my-demo --template contract-review
+cd my-demo
+dataforge dev
+```
+
+In a second terminal:
+
+```bash
+# 1. Discover the model
+dataforge schema describe --format json
+
+# 2. Find pending contracts (seed has con_001 and con_002 in pending_review)
+dataforge query Contract \
+  --filter-json '{"status":{"eq":"pending_review"}}' \
+  --format json
+
+# 3. What does approve do?
+dataforge actions describe Contract.approve --format json
+
+# 4. Dry-run: create a signed plan (no mutation yet)
+dataforge actions run Contract.approve con_001 \
+  --input-json '{"comment":"Budget verified by finance"}' \
+  --dry-run --format json
+
+# The response contains planId and hash. Copy them for the next steps.
+
+# 5. Inspect the plan
+dataforge plan inspect <planId-from-output> --plan-format markdown
+
+# 6. Apply the verified plan
+dataforge actions run Contract.approve con_001 \
+  --apply-plan <planId-from-output> \
+  --plan-hash <hash-from-output> \
+  --idempotency-key approve-con-001-001 \
+  --format json
+
+# 7. Confirm final state
+dataforge query Contract \
+  --filter-json '{"reference":{"eq":"CTR-2024-001"}}' \
+  --format json
+```
+
+The only values you copy-paste are `planId` and `hash` from the dry-run output in step 4. Everything else uses concrete IDs from the seeded data.
+
+---
+
+## What just happened
+
+| Step | What the runtime did |
+|------|---------------------|
+| **schema describe** | Returned the `Contract` ObjectType with status enum, `mutableBy` constraints, and three declared actions |
+| **query** | Found `con_001` (CTR-2024-001, 45,000 EUR) and `con_002` (CTR-2024-002, 12,000 EUR) in `pending_review` |
+| **actions describe** | Showed that `Contract.approve` requires `status == pending_review`, role `manager`, execution mode `twin_apply`, risk level `medium` |
+| **dry-run** | Created a plan with the exact diff (`status: pending_review -> approved`, `approvedAt: null -> <applyTime>`), policy checks, cost estimate, and Ed25519 signature |
+| **plan inspect** | Displayed the diff in human-readable markdown |
+| **apply** | Re-validated all 27 PlanGuard checks, applied atomically, returned the updated object with incremented version |
+| **final query** | Confirmed `status: approved`, `approvedAt` populated, version incremented once |
+
+The agent never touched `Contract.status` directly. The runtime enforced the action contract at every step.
+
+---
+
 ## Business situation
 
-A sales, legal, or operations team wants an AI agent to review pending contracts and approve low-risk ones.
+A sales, legal, or operations team wants an AI agent to review pending contracts and approve low-risk ones. The agent may have enough context, but the business cannot let it update contract status through a raw database write or a broad tool call. Ontologie turns the task into a bounded action: `Contract.approve`.
 
-The agent may have enough context to recommend an approval, but the business cannot let it update contract status through a raw database write, a generic CRUD endpoint, or a broad tool call.
-
-Ontologie turns the task into a bounded business action: `Contract.approve`.
-
-## Why a normal agent interface is unsafe
+## Why raw agent access is unsafe
 
 Without a governed runtime, an agent might:
 
@@ -19,19 +93,11 @@ Without a governed runtime, an agent might:
 - Apply the same change twice.
 - Leave no durable proof of who approved what and under which policy.
 
-Ontologie makes the agent prove the intended change before anything is written.
+---
 
-## What Ontologie adds
+## Model
 
-- `Contract` is a typed ObjectType with declared properties.
-- `status` is constrained to declared values, not a free-form string.
-- `status` can only be changed by declared actions (`Contract.approve`, `Contract.reject`).
-- `Contract.approve` declares preconditions, inputs, effects, execution mode, and risk level.
-- A dry-run creates a signed plan with the exact before/after diff.
-- Apply requires the same plan, same actor, current object version, and an idempotency key.
-- The resulting event is auditable with full provenance.
-
-## Model sketch
+This is the actual schema from the [`contract-review` template](../../templates/README.md) (`dataforge.schema.ts`):
 
 ```ts
 const ContractStatus = enumType('ContractStatus', [
@@ -39,63 +105,71 @@ const ContractStatus = enumType('ContractStatus', [
   'pending_review',
   'approved',
   'rejected',
-  'needs_human_review',
 ]);
 
 const Client = objectType('Client', {
   name: string().required().indexed(),
-  riskTier: string().optional().indexed(),
+  email: string().optional(),
+  sector: string().optional(),
 });
 
 const Contract = objectType('Contract', {
   reference: string().required().indexed(),
-  amount: number().required(),
+  title: string().required(),
+  amount: number(),
   currency: string().default('EUR'),
   status: ContractStatus.default('draft')
-    .mutableBy(['Contract.submitForReview', 'Contract.approve', 'Contract.reject']),
+    .mutableBy(['Contract.submit', 'Contract.approve', 'Contract.reject']),
+  submittedAt: date().optional()
+    .mutableBy(['Contract.submit']),
   approvedAt: date().optional()
     .mutableBy(['Contract.approve']),
   rejectedAt: date().optional()
     .mutableBy(['Contract.reject']),
-  decisionComment: string().optional()
-    .mutableBy(['Contract.approve', 'Contract.reject']),
+  rejectionReason: string().optional()
+    .mutableBy(['Contract.reject']),
 });
 
-const ContractToClient = link('Contract', 'Client')
+const ContractBelongsToClient = link('Contract', 'Client')
   .cardinality('many_to_one')
   .label('belongs_to');
+
+const approveContract = action('approve')
+  .on(Contract)
+  .executionMode('twin_apply')
+  .riskLevel('medium')
+  .input({ comment: string().optional() })
+  .requires(role('manager'))
+  .when(c => c.status.eq('pending_review'))
+  .set({ status: 'approved', approvedAt: now() });
 ```
 
-## Actions
+---
+
+## Actions and policy
 
 | Action | Purpose | Execution mode |
 |--------|---------|----------------|
-| `Contract.submitForReview` | Move a draft contract into review | `twin_apply` |
+| `Contract.submit` | Move a draft contract into review | `twin_apply` |
 | `Contract.approve` | Approve a pending contract | `twin_apply` |
 | `Contract.reject` | Reject a pending contract | `twin_apply` |
-
-## Policy sketch
 
 ```json
 {
   "requireDryRunBeforeMutation": true,
   "forbidDelete": true,
   "maxObjectsTouched": 1,
-  "allowedActions": [
-    "Contract.submitForReview",
-    "Contract.approve",
-    "Contract.reject"
-  ]
+  "allowedActions": ["Contract.submit", "Contract.approve", "Contract.reject"]
 }
 ```
 
-Business rules:
-
 - Only `manager` role can approve.
 - Only contracts in `pending_review` can be approved.
-- High-value contracts (above threshold) should route to human review.
-- Rejected contracts require a `decisionComment`.
-- Direct writes to `status`, `approvedAt`, and `rejectedAt` are forbidden by `mutableBy`.
+- High-value contracts (above threshold) route to human review.
+- Rejected contracts require a `rejectionReason`.
+- `status`, `approvedAt`, and `rejectedAt` are protected by `mutableBy` — no direct writes.
+
+---
 
 ## Agent task card
 
@@ -111,10 +185,11 @@ Allowed commands:
 - dataforge schema describe --format json
 - dataforge query contract --filter-json '{"status":{"eq":"pending_review"}}' --format json
 - dataforge actions describe Contract.approve --format json
-- dataforge actions run Contract.approve <contractId> --input-json '{"comment":"<reason>"}' --dry-run --format json
-- dataforge plan inspect <planId> --format markdown
-- dataforge plan verify <planId> --format json
+- dataforge actions run Contract.approve <contractId> --input-json '{"comment":"..."}' --dry-run --format json
+- dataforge plan inspect <planId> --plan-format markdown
+- dataforge plan verify <planId> --risk-acknowledged --confirmed --format json
 - dataforge actions run Contract.approve <contractId> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
+- dataforge instance get <contractId> --format json
 
 Forbidden:
 - Do not invent action keys.
@@ -129,90 +204,52 @@ Success criteria:
 - An audit event references the action and plan.
 ```
 
-## Demo script
+---
 
-```bash
-# 1. Generate agent-readable context
-dataforge context pack "approve the pending contract safely" --format markdown
+## Expected plan output
 
-# 2. Discover the model
-dataforge schema describe --format json
+When the dry-run succeeds, the JSON response looks like:
 
-# 3. Find contracts pending review
-dataforge query contract \
-  --filter-json '{"status":{"eq":"pending_review"}}' \
-  --format json
-
-# 4. Describe the approval action
-dataforge actions describe Contract.approve --format json
-
-# 5. Dry-run: create a signed plan
-dataforge actions run Contract.approve <contractId> \
-  --input-json '{"comment":"Budget verified and terms match policy"}' \
-  --dry-run \
-  --format json
-
-# 6. Inspect the plan
-dataforge plan inspect <planId> --format markdown
-
-# 7. Verify the plan
-dataforge plan verify <planId> --format json
-
-# 8. Apply the plan
-dataforge actions run Contract.approve <contractId> \
-  --apply-plan <planId> \
-  --plan-hash <hash> \
-  --idempotency-key approve-contract-<contractId>-001 \
-  --format json
-
-# 9. Verify final state
-dataforge query contract \
-  --filter-json '{"id":{"eq":"<contractId>"}}' \
-  --format json
+```json
+{
+  "ok": true,
+  "data": {
+    "planId": "845f9bf5-caf4-4ae2-bb0c-a96c3610c6df",
+    "state": "pending",
+    "action": {
+      "key": "Contract.approve",
+      "version": 1,
+      "executionMode": "twin_apply",
+      "riskLevel": "medium"
+    },
+    "target": {
+      "objectType": "Contract",
+      "instanceId": "con_001",
+      "version": 2
+    },
+    "effects": [
+      {
+        "type": "update",
+        "objectType": "Contract",
+        "instanceId": "con_001",
+        "before": { "status": "pending_review", "approvedAt": null },
+        "after": { "status": "approved", "approvedAt": { "$ref": "$applyTime" } }
+      }
+    ],
+    "inputs": { "comment": "Budget verified by finance" },
+    "policyChecks": [
+      { "check": "mutableBy_status", "passed": true },
+      { "check": "precondition_status_eq_pending_review", "passed": true },
+      { "check": "required_role_manager", "passed": true }
+    ],
+    "hash": "sha256:7f3a...",
+    "signature": "ed25519:...",
+    "expiresAt": "2026-05-05T14:45:00Z"
+  }
+}
 ```
 
-## What the user understands
-
-**Before Ontologie:**
-
-> "The agent approved a contract by calling an API. We hope it picked the right record and followed our rules."
-
-**With Ontologie:**
-
-> "The agent could only call `Contract.approve`. The runtime checked the current contract state, role, policy, object version, and exact diff before applying the change. We have the signed plan and audit event."
-
-## Proof produced
-
-A successful run produces:
-
-- `planId` — unique identifier for the signed plan.
-- `planHash` — SHA-256 hash of the plan content.
-- Exact before/after diff (e.g., `status: pending_review -> approved`).
-- Target contract id and object version.
-- Actor binding (who applied, credential type).
-- Policy version active at the time of the check.
-- Action version.
-- Idempotency key (prevents duplicate application).
-- Audit event with full provenance.
-
-## Validation primitives
-
-These primitives make this use case reusable as the reference pattern for future public templates:
-
-| Primitive | Required proof |
-|-----------|----------------|
-| Context grounding | `dataforge context pack` returns a non-empty context before action selection |
-| Twin query | `dataforge query` returns at least one target object in the expected state |
-| Action contract | `actions describe` exposes the action key, execution mode, preconditions, effects, and input schema |
-| Signed plan creation | Dry-run returns `planId`, `planHash`, `signature.algorithm=ed25519`, target binding, and expiry |
-| Inspectability | `plan inspect` returns a readable diff or effect list before any apply |
-| Verifiability | `plan verify` returns zero failed checks |
-| Governed apply | `--apply-plan` requires `--plan-hash` and an idempotency key and cannot mutate outside the signed plan |
-| Durable proof | Audit or action execution references the `planId`, actor, idempotency hash, and final status |
-
-## Example plan output
-
-When a dry-run succeeds, the inspect command shows:
+And `plan inspect --plan-format markdown` shows:
 
 ```markdown
 # DataForge Action Plan
@@ -226,9 +263,9 @@ Risk: **medium**
 
 | Op | Object | Field | Before | After |
 |:---|:-------|:------|:-------|:------|
-| object.update | contract#3532be68 | status | `pending_review` | `approved` |
-| object.update | contract#3532be68 | decidedAt | `null` | `2026-05-05T08:48:06Z` |
-| object.update | contract#3532be68 | decisionComment | `null` | `Budget verified...` |
+| object.update | contract#con_001 | status | `pending_review` | `approved` |
+| object.update | contract#con_001 | approvedAt | `null` | `2026-05-05T08:48:06Z` |
+| object.update | contract#con_001 | decisionComment | `null` | `Budget verified...` |
 
 ## Policy Checks
 
@@ -237,10 +274,90 @@ Risk: **medium**
 | status eq "pending_review" | PASS | blocking |
 
 ## Apply
-dataforge actions run Contract.approve \
+dataforge actions run Contract.approve con_001 \
   --apply-plan 845f9bf5-caf4-4ae2-bb0c-a96c3610c6df \
-  --plan-hash <hash> \
-  --idempotency-key <key>
+  --plan-hash sha256:7f3a... \
+  --idempotency-key approve-con-001-001
 ```
 
-This output was captured from a live staging environment on 2026-05-05.
+---
+
+## Before / After
+
+**Before Ontologie:**
+
+> "The agent approved a contract by calling an API. We hope it picked the right record and followed our rules."
+
+**With Ontologie:**
+
+> "The agent could only call `Contract.approve`. The runtime checked the current contract state, role, policy, object version, and exact diff before applying the change. We have the signed plan and audit event."
+
+## Proof produced
+
+A successful run produces:
+
+- `planId` and `planHash` (SHA-256).
+- Exact before/after diff (e.g., `status: pending_review -> approved`).
+- Target contract id and object version.
+- Actor binding (who applied, credential type).
+- Policy version active at the time of the check.
+- Action version.
+- Idempotency key (prevents duplicate application).
+- Audit event with full provenance.
+
+---
+
+## Try the failure cases
+
+The seed data includes `con_003` (status: `draft`). Use it to see how the runtime rejects unsafe operations:
+
+**1. Precondition failure** — approve a contract that is not in `pending_review`:
+
+```bash
+dataforge actions run Contract.approve con_003 \
+  --input-json '{"comment":"Trying to approve a draft"}' \
+  --dry-run --format json
+# Returns error: precondition failed (status is "draft", expected "pending_review")
+```
+
+**2. Idempotency replay** — re-apply the same key after a successful apply:
+
+```bash
+dataforge actions run Contract.approve con_001 \
+  --apply-plan <planId> \
+  --plan-hash <hash> \
+  --idempotency-key approve-con-001-001 \
+  --format json
+# Returns the cached result without re-mutating the object
+```
+
+**3. Version conflict** — approve con_002, then try to apply a plan created before that approval:
+
+```bash
+# First, create a plan for con_002
+dataforge actions run Contract.approve con_002 \
+  --input-json '{"comment":"First approval"}' \
+  --dry-run --format json
+# Save the planId. Now approve con_001 (this increments the manifest version).
+# Then try to apply the stale con_002 plan:
+# Returns error: version conflict (object changed since dry-run)
+```
+
+Failures are where safety becomes tangible. The runtime never silently succeeds when preconditions, versions, or policies don't match.
+
+---
+
+## Validation primitives
+
+These primitives make this use case reusable as the reference pattern for all other use cases:
+
+| Primitive | Required proof |
+|-----------|----------------|
+| Context grounding | `dataforge context pack` returns a non-empty context before action selection |
+| Twin query | `dataforge query` returns at least one target object in the expected state |
+| Action contract | `actions describe` exposes the action key, execution mode, preconditions, effects, and input schema |
+| Signed plan creation | Dry-run returns `planId`, `planHash`, `signature.algorithm=ed25519`, target binding, and expiry |
+| Inspectability | `plan inspect` returns a readable diff or effect list before any apply |
+| Verifiability | `plan verify` returns zero failed checks, or `PLAN_CONTEXT_MISMATCH` when a new dry-run is required |
+| Governed apply | `--apply-plan` requires `--plan-hash` and an idempotency key and cannot mutate outside the signed plan |
+| Durable proof | Audit or action execution references the `planId`, actor, idempotency hash, and final status |

@@ -14,7 +14,7 @@ The server returns a plan artifact like:
 {
   "ok": true,
   "data": {
-    "planId": "plan_abc123def456",
+    "planId": "845f9bf5-caf4-4ae2-bb0c-a96c3610c6df",
     "state": "pending",
     "action": {
       "key": "Contract.approve",
@@ -48,12 +48,11 @@ The server returns a plan artifact like:
     },
     "bindings": {
       "actor": {
-        "principalType": "agent_on_behalf_of",
-        "principalId": "agent_xyz",
-        "onBehalfOf": "user_jane"
+        "principalType": "api_key",
+        "principalId": "key_local_dev"
       },
-      "workspace": "ws_abc",
-      "manifestVersion": 3,
+      "workspace": "local",
+      "manifestVersion": 1,
       "policyVersion": 1
     },
     "costEstimate": {
@@ -69,8 +68,8 @@ The server returns a plan artifact like:
       { "check": "required_role_manager", "passed": true },
       { "check": "budget_available", "passed": true }
     ],
-    "hash": "sha256:deadbeef...",
-    "signature": "ed25519:base64signature...",
+    "hash": "sha256:7f3a...",
+    "signature": "ed25519:...",
     "createdAt": "2026-05-04T14:30:00Z",
     "expiresAt": "2026-05-04T14:45:00Z"
   },
@@ -79,7 +78,7 @@ The server returns a plan artifact like:
     "requestId": "req_789",
     "durationMs": 45,
     "costUnits": 0,
-    "manifestVersion": 3,
+    "manifestVersion": 1,
     "policyVersion": 1
   }
 }
@@ -96,12 +95,33 @@ The server returns a plan artifact like:
 
 ## Apply command
 
+Copy the `planId` and `hash` from the dry-run response above:
+
 ```bash
 dataforge actions run Contract.approve con_001 \
-  --apply-plan plan_abc123def456 \
-  --plan-hash sha256:<hash> \
-  --idempotency-key approve-con-001-20260504 \
+  --apply-plan 845f9bf5-caf4-4ae2-bb0c-a96c3610c6df \
+  --plan-hash sha256:7f3a... \
+  --idempotency-key approve-con-001-001 \
   --format json
 ```
 
 The server re-validates all 27 PlanGuard checks and applies atomically.
+
+## Failure cases
+
+Try these with the seed data:
+
+```bash
+# Precondition failure: con_003 is in "draft", not "pending_review"
+dataforge actions run Contract.approve con_003 \
+  --input-json '{"comment":"Trying to approve a draft"}' \
+  --dry-run --format json
+
+# Idempotency replay: re-apply the same key after success
+dataforge actions run Contract.approve con_001 \
+  --apply-plan <planId> \
+  --plan-hash <hash> \
+  --idempotency-key approve-con-001-001 \
+  --format json
+# Returns cached result without re-mutation
+```

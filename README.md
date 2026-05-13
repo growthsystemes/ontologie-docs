@@ -47,10 +47,14 @@ flowchart TB
 ## Quickstart
 
 ```bash
+# Option A — scaffolder (recommended)
+npx create-ontologie-app my-project --template contract-review
+cd my-project && dataforge dev
+
+# Option B — global CLI
 npm install -g @ontologie/cli
 dataforge init --template contract-review
-cd contract-review
-dataforge dev
+cd contract-review && dataforge dev
 ```
 
 In another terminal:
@@ -60,7 +64,7 @@ dataforge schema describe --format json
 dataforge query Contract --format json
 dataforge actions describe Contract.approve --format json
 dataforge actions run Contract.approve con_001 --dry-run --format json
-dataforge plan inspect <planId> --format markdown
+dataforge plan inspect <planId> --plan-format markdown
 dataforge actions run Contract.approve con_001 \
   --apply-plan <planId> \
   --idempotency-key approve-con-001 \
@@ -143,7 +147,7 @@ See the full [contract-review example](examples/contract-review/) with seed data
 | **SDK** (`@ontologie/sdk-client`) | TypeScript / Node.js apps | Stable |
 | **MCP** (`@ontologie/mcp`) | Claude Code, Codex, MCP clients | Preview |
 
-The CLI is the canonical contract. SDK and MCP expose the same capabilities with the same scopes, policies, signed plans, and audit. The MCP adapter never has more power than the CLI.
+The CLI is the canonical contract. SDK and MCP expose the same capabilities with the same scopes, policies, signed plans, and audit. The MCP adapter never has more power than the CLI. See [Stability and versioning](docs/stability-and-versioning.md) for the full tier classification.
 
 Works with Claude Code, Codex, any MCP client, and regular CLI/CI workflows.
 
@@ -241,19 +245,18 @@ See [Signed plans and safety](docs/signed-plans-and-safety.md) and [SECURITY.md]
 
 ## Use cases
 
-See how real teams use Ontologie to let agents act safely:
+Start with **[Contract approval](docs/use-cases/contract-approval.md)** — it includes an executable demo you can run locally in under 5 minutes. The other pages are reference cards showing the same safety loop in different domains.
 
-| Use case | Domain |
-|----------|--------|
-| [Contract approval](docs/use-cases/contract-approval.md) | Legal / Sales ops |
-| [Vendor onboarding](docs/use-cases/vendor-onboarding.md) | Procurement |
-| [Customer refund](docs/use-cases/refund-approval.md) | Support / Finance |
-| [CRM pipeline](docs/use-cases/crm-pipeline.md) | Revenue ops |
-| [Finance audit](docs/use-cases/finance-audit.md) | Finance / Audit |
-| [IT access request](docs/use-cases/it-access-request.md) | IT / Security |
-| [Data quality](docs/use-cases/data-quality.md) | Operations / Data |
-
-Each demo follows the same safety loop and produces signed plans with full audit trails.
+| Use case | Domain | Distinguishing feature |
+|----------|--------|----------------------|
+| [Contract approval](docs/use-cases/contract-approval.md) | Legal / Sales ops | **Canonical demo** — executable, failure cases, full proof |
+| [Vendor onboarding](docs/use-cases/vendor-onboarding.md) | Procurement | Document checks, linked risk assessments |
+| [Customer refund](docs/use-cases/refund-approval.md) | Support / Finance | Amount policies, linked orders |
+| [CRM pipeline](docs/use-cases/crm-pipeline.md) | Revenue ops | Multi-object, bulk awareness |
+| [Finance audit](docs/use-cases/finance-audit.md) | Finance / Audit | `plan_only` mode (proposals without mutation) |
+| [IT access request](docs/use-cases/it-access-request.md) | IT / Security | Expiry rules, risk tier routing |
+| [Data quality](docs/use-cases/data-quality.md) | Operations / Data | Two-step: correct then resolve |
+| [Customer file 360](docs/use-cases/customer-file-360.md) | Customer ops | PII, GDPR, multi-step erasure workflow |
 
 ---
 

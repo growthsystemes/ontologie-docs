@@ -1,37 +1,14 @@
-# Use case: Vendor onboarding and procurement approval
+# Use case: Vendor onboarding
 
-## Business situation
+> Procurement | 5 actions | Template: [`vendor-risk`](../../templates/README.md) | [Run this demo](#run-this-demo)
 
-A company receives a request to onboard a new supplier. An AI agent can collect context, check required documents, summarize risk, and recommend whether the vendor should be approved.
+## Situation and risk
 
-The sensitive part is the final state change. Approving a supplier can make it available for purchase orders, invoices, and payments. The agent should not be able to directly mutate the vendor master.
+A company receives a request to onboard a new supplier. An AI agent can collect context, check required documents, summarize risk, and recommend whether the vendor should be approved. The sensitive part is the final state change — approving a supplier makes it available for purchase orders, invoices, and payments.
 
-Ontologie turns the workflow into declared actions such as `Vendor.approve`, `Vendor.reject`, and `Vendor.requestHumanReview`.
+Without Ontologie, an agent might approve a high-risk supplier, skip required documents, change bank or tax fields directly, perform duplicate approvals, or leave no auditable link between the decision and the current vendor state.
 
-## Why a normal agent interface is unsafe
-
-Without Ontologie, an agent might:
-
-- Create or approve a vendor through a broad ERP API.
-- Skip required documents.
-- Approve a high-risk supplier.
-- Change bank or tax fields directly.
-- Perform a duplicate approval.
-- Leave no auditable link between the decision, policy, and current vendor state.
-
-## What Ontologie adds
-
-Ontologie separates reading, reasoning, and applying:
-
-- The agent can query typed vendors and linked documents.
-- The agent can describe the allowed vendor actions.
-- Approval is a bounded action with typed inputs and preconditions.
-- Sensitive fields (`status`, `approvedAt`, `riskDecision`) are protected by `mutableBy`.
-- Dry-run creates a plan that procurement can inspect.
-- Apply is verified against current object versions and policy.
-- The final decision is auditable.
-
-## Model sketch
+## Model
 
 ```ts
 const VendorStatus = enumType('VendorStatus', [
@@ -70,7 +47,7 @@ const VendorToDocument = link('Vendor', 'VendorDocument')
   .label('has_document');
 ```
 
-## Actions
+## Actions and policy
 
 | Action | Purpose | Execution mode |
 |--------|---------|----------------|
@@ -80,118 +57,44 @@ const VendorToDocument = link('Vendor', 'VendorDocument')
 | `Vendor.reject` | Reject a vendor with a reason | `twin_apply` |
 | `Vendor.requestHumanReview` | Mark a vendor for manual review | `twin_apply` |
 
-## Policy sketch
-
 ```json
 {
   "requireDryRunBeforeMutation": true,
   "forbidDelete": true,
   "maxObjectsTouched": 1,
   "allowedActions": [
-    "Vendor.submitForReview",
-    "Vendor.updateRiskAssessment",
-    "Vendor.approve",
-    "Vendor.reject",
-    "Vendor.requestHumanReview"
+    "Vendor.submitForReview", "Vendor.updateRiskAssessment",
+    "Vendor.approve", "Vendor.reject", "Vendor.requestHumanReview"
   ]
 }
 ```
 
-Business rules:
-
 - Approval requires the `procurement_manager` role.
-- `status` can only change through declared actions.
 - High-risk vendors cannot be auto-approved.
-- Missing tax, bank, insurance, or compliance documents should route to human review.
-- Direct edits to bank and tax fields are disallowed.
+- Missing tax, bank, insurance, or compliance documents route to human review.
 
-## Agent task card
-
-```
-Task: Review and approve a supplier safely.
-
-Goal:
-Approve a Vendor only if it is pending review, required documents are present,
-risk is acceptable, and the runtime returns a valid dry-run plan.
-
-Allowed commands:
-- dataforge schema describe --format json
-- dataforge query vendor --filter-json '{"status":{"eq":"pending_review"}}' --format json
-- dataforge graph neighbors <vendorId> --format json
-- dataforge actions describe Vendor.approve --format json
-- dataforge actions run Vendor.approve <vendorId> --input-json '{"comment":"<reason>"}' --dry-run --format json
-- dataforge plan inspect <planId> --format markdown
-- dataforge actions run Vendor.approve <vendorId> --apply-plan <planId> --plan-hash <hash> --idempotency-key <key> --format json
-
-Forbidden:
-- Do not approve vendors with missing required documents.
-- Do not invent ERP write operations.
-- Do not directly mutate Vendor.status.
-- Do not update bank details through a generic action.
-- Do not retry policy mismatches.
-
-Success criteria:
-- Vendor status becomes approved once.
-- The plan diff is limited to approved fields.
-- Audit shows actor, action, plan, and policy.
-```
-
-## Demo script
+## Run this demo
 
 ```bash
-# 1. Discover the model
-dataforge schema describe --format json
-
-# 2. Find vendors pending review
-dataforge query vendor \
-  --filter-json '{"status":{"eq":"pending_review"}}' \
-  --format json
-
-# 3. Check linked documents
-dataforge graph neighbors <vendorId> --format json
-
-# 4. Describe the approval action
+dataforge init my-vendor-demo --template vendor-risk
+cd my-vendor-demo && dataforge dev
+# In another terminal:
+dataforge query Vendor --format json
 dataforge actions describe Vendor.approve --format json
-
-# 5. Dry-run
-dataforge actions run Vendor.approve <vendorId> \
-  --input-json '{"comment":"All required documents present; risk tier low"}' \
-  --dry-run \
-  --format json
-
-# 6. Inspect the plan
-dataforge plan inspect <planId> --format markdown
-
-# 7. Apply
-dataforge actions run Vendor.approve <vendorId> \
-  --apply-plan <planId> \
-  --plan-hash <hash> \
-  --idempotency-key approve-vendor-<vendorId>-001 \
-  --format json
+dataforge actions run Vendor.approve v-001 \
+  --input-json '{"comment":"All documents present; risk tier low"}' \
+  --dry-run --format json
+# Then inspect, verify, and apply — same safety loop as contract approval.
 ```
 
-## What the user understands
+The safety loop is the same as [contract approval](./contract-approval.md#try-it-now): dry-run, inspect, apply with plan hash and idempotency key.
 
-**Before Ontologie:**
+## Before / After
 
-> "The agent has access to the vendor API. We need to trust that it only updates the right fields."
-
-**With Ontologie:**
-
-> "The agent can only use declared vendor actions. Approval requires a dry-run, policy checks, a verified plan, and an audit event."
-
-## Proof produced
-
-- `planId` and `planHash`.
-- Vendor before/after status.
-- List of affected fields.
-- Actor binding.
-- Policy version.
-- Vendor object version.
-- Idempotency key.
-- Audit event id.
-- Linked evidence inspected by the agent (via graph neighbors).
+| Without Ontologie | With Ontologie |
+|---|---|
+| "The agent has vendor API access. We need to trust that it only updates the right fields." | "Only declared vendor actions. Dry-run, policy checks, document verification, and audit on every change." |
 
 ## Scope note
 
-For V1, treat Ontologie as the governed vendor decision layer. Automatic ERP vendor-master creation requires source-system connectors (`external_commit` mode) which is a future capability.
+V1 treats Ontologie as the governed vendor decision layer. Automatic ERP vendor-master creation requires source-system connectors (`external_commit` mode), which is a future capability.

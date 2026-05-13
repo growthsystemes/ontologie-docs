@@ -14,33 +14,25 @@ The core pattern is always the same:
 
 ---
 
-## Available use cases
+## Start here
 
-| Use case | Domain | Complexity |
-|----------|--------|-----------|
-| [Contract approval](./contract-approval.md) | Legal / Sales ops | Simple (single object, single action) |
-| [Vendor onboarding](./vendor-onboarding.md) | Procurement | Medium (linked objects, document checks) |
-| [Customer refund approval](./refund-approval.md) | Support / Finance | Medium (amount policies, linked orders) |
-| [Customer file 360](./customer-file-360.md) | Customer ops / CRM | Medium (PII, notes, documents, duplicate merge) |
-| [CRM pipeline governance](./crm-pipeline.md) | Revenue ops | Medium (multiple action types, bulk awareness) |
-| [Finance audit evidence](./finance-audit.md) | Finance / Audit | Medium (proposal mode, evidence linking) |
-| [IT access request](./it-access-request.md) | IT / Security | Medium (expiry rules, risk tiers) |
-| [Data quality remediation](./data-quality.md) | Operations / Data | Medium (corrections, proposals, evidence) |
+**[Contract approval](./contract-approval.md)** is the canonical use case. It includes an executable demo you can run locally in under 5 minutes, the full model, agent task card, expected plan output, failure cases, and validation primitives.
 
-Start with **Contract approval** — it is the simplest complete demonstration of the safety loop.
+Read it first. The reference cards below show how the same pattern applies to other domains.
 
 ---
 
-## How to read these use cases
+## Reference cards
 
-Each use case includes:
-
-- The business situation and why it requires governed agent access.
-- A model sketch showing ObjectTypes, links, and actions.
-- A policy sketch.
-- An agent task card with allowed and forbidden commands.
-- A demo script using the CLI.
-- The proof artifacts produced by a successful run.
+| Use case | Domain | Actions | Template | Distinguishing feature |
+|----------|--------|---------|----------|----------------------|
+| [Vendor onboarding](./vendor-onboarding.md) | Procurement | 5 | `vendor-risk` | Document checks, linked risk assessments |
+| [Customer refund](./refund-approval.md) | Support / Finance | 3 | -- | Amount policies, linked orders |
+| [CRM pipeline](./crm-pipeline.md) | Revenue ops | 5 | -- | Multi-object (`maxObjectsTouched: 20`), bulk awareness |
+| [Finance audit](./finance-audit.md) | Finance / Audit | 7 | -- | `plan_only` mode (proposals without mutation) |
+| [IT access request](./it-access-request.md) | IT / Security | 3 | -- | Expiry rules, risk tier routing |
+| [Data quality](./data-quality.md) | Operations / Data | 5 | -- | Two-step: correct then resolve |
+| [Customer file 360](./customer-file-360.md) | Customer ops | 11 | -- | PII, GDPR, multi-step erasure workflow |
 
 ---
 
@@ -59,8 +51,9 @@ dataforge schema describe --format json          # Discover the model
 dataforge query <type> --filter-json '{...}'     # Query instances
 dataforge graph neighbors <id> --format json     # Traverse linked objects
 dataforge actions describe <key> --format json   # Describe an action
-dataforge actions run <key> <id> --dry-run       # Create a signed plan
-dataforge plan inspect <planId> --format markdown # Inspect the plan
+dataforge actions run <key> <id> \
+  --input-file input.json --dry-run              # Create a signed plan
+dataforge plan inspect <planId> --plan-format markdown # Inspect the plan
 dataforge actions run <key> <id> \
   --apply-plan <planId> \
   --plan-hash <hash> \
@@ -115,3 +108,14 @@ The verify step (`POST /api/v1/plans/{planId}/verify`) requires explicit confirm
 ```
 
 Without these flags, the response may return `canApply: false`.
+
+If verify returns `PLAN_CONTEXT_MISMATCH` with
+`PLAN_SCHEMA_VERSION_MISMATCH`, the manifest changed after dry-run. Rerun the
+dry-run command, inspect the new plan, then verify and apply that new plan.
+
+### Action input on Windows
+
+For copied runbook commands, prefer `--input-file input.json`. It avoids native
+PowerShell quoting differences for inline JSON. For simple scalar inputs,
+`--input comment="Budget verified"` is also safe. Use `--input-json` only when
+the shell is known to pass JSON quotes unchanged.
