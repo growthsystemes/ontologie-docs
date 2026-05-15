@@ -83,6 +83,66 @@ cd my-access-demo && dataforge dev
 # Adapt the schema, then: query -> describe -> dry-run -> inspect -> apply
 ```
 
+Validated public CLI shape:
+
+```bash
+# Discover the access model and actions
+dataforge schema search access --types ObjectType,Action --format json
+dataforge query access_request --format json
+dataforge graph neighbors <accessRequestId> --format json
+
+# Describe all governed decisions
+dataforge actions describe AccessRequest.approve --format json
+dataforge actions describe AccessRequest.deny --format json
+dataforge actions describe AccessRequest.requestHumanReview --format json
+
+# Prepare structured inputs
+# Windows PowerShell:
+# '{"comment":"Manager approved; read access expires after incident window","expiresAt":"2026-06-04T00:00:00Z"}' | Set-Content -Encoding utf8 it-access-approve-input.json
+# '{"reason":"Admin access not justified for this task"}' | Set-Content -Encoding utf8 it-access-deny-input.json
+# '{"reason":"Admin access requires manual security review"}' | Set-Content -Encoding utf8 it-access-human-review-input.json
+#
+# Bash:
+cat > it-access-approve-input.json <<'JSON'
+{
+  "comment": "Manager approved; read access expires after incident window",
+  "expiresAt": "2026-06-04T00:00:00Z"
+}
+JSON
+
+cat > it-access-deny-input.json <<'JSON'
+{
+  "reason": "Admin access not justified for this task"
+}
+JSON
+
+cat > it-access-human-review-input.json <<'JSON'
+{
+  "reason": "Admin access requires manual security review"
+}
+JSON
+
+# Dry-run one decision
+dataforge actions run AccessRequest.approve <accessRequestId> \
+  --input-file it-access-approve-input.json \
+  --dry-run \
+  --format json
+
+# Inspect, verify, apply, and confirm final state
+dataforge plan inspect <planId> --plan-format markdown
+dataforge plan verify <planId> --risk-acknowledged --confirmed --format json
+dataforge actions run AccessRequest.approve <accessRequestId> \
+  --apply-plan <planId> \
+  --plan-hash <hash> \
+  --idempotency-key approve-access-<accessRequestId>-001 \
+  --format json
+dataforge instance get <accessRequestId> --format json
+```
+
+Use the same dry-run, inspect, verify, apply, and `instance get` sequence for
+`AccessRequest.deny` and `AccessRequest.requestHumanReview`, switching only the
+action key and input file.
+
 ## Before / After
 
 | Without Ontologie | With Ontologie |
@@ -92,3 +152,13 @@ cd my-access-demo && dataforge dev
 ## Scope note
 
 V1 shows the access decision in the operational twin. Automated IAM provisioning requires `external_commit` mode (future).
+
+## Local validation
+
+This use case is covered by the repeatable local CLI runbook:
+
+```bash
+node tests/scripts/public-cli-it-access-request-check.cjs
+```
+
+Latest staging result on 2026-05-13: `PASS=28 FAIL=0 GAP=0`.

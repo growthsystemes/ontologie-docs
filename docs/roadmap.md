@@ -27,7 +27,7 @@ Commercialisation status:
 | Gate | Status |
 |------|--------|
 | BaaS signed-plan loop | Stable commercial offer when staging public use-case, edge, proof, and daily golden-path gates are green |
-| Self-serve billing | Self-serve billing is staging-ready, not Stable for production until live Stripe prices, webhook secret, and operator approval are complete |
+| Self-serve billing | Self-serve billing is staging-ready, not Stable, until live Stripe prices, webhook secret, and operator approval are verified; Governance remains deferred |
 | API cloud complete | Separate track; broad API endpoint coverage is not the stable BaaS contract |
 | MCP adapter | Preview; MCP never has more mutation power than CLI/API |
 
@@ -71,7 +71,7 @@ Preview features are documented and supported best-effort. They may change in mi
 | Feature | Description |
 |---------|-------------|
 | MCP Stable | Promote MCP adapter to Stable with full compatibility guarantee |
-| Production self-serve billing | Promote prepaid DFU pack purchase and plan management after Stripe live go/no-go |
+| Production self-serve billing | Monitor prepaid DFU pack purchase, wallet grants, and plan management after Stripe live go/no-go |
 | SOC 2 certification | Formal compliance certification |
 | Multi-agent safety | Extending the safety model to multi-agent scenarios |
 

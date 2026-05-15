@@ -4,7 +4,7 @@
 
 ## Situation and risk
 
-A revenue operations team wants an AI agent to review stale opportunities, move deals to the right stage, assign owners, and mark low-quality leads as disqualified. CRM state is business-critical — a bad bulk update can break forecasts, route accounts incorrectly, or erase sales history.
+A revenue operations team wants an AI agent to review stale opportunities, move deals to the right stage, assign owners, and mark low-quality leads as disqualified. CRM state is business-critical: a bad bulk update can break forecasts, route accounts incorrectly, or erase sales history.
 
 Without Ontologie, an agent might move many opportunities to the wrong stage, overwrite owner assignments, disqualify valid leads, apply stale recommendations after a sales rep updated the record, or leave no audit trail for forecast changes.
 
@@ -12,31 +12,41 @@ Without Ontologie, an agent might move many opportunities to the wrong stage, ov
 
 ```ts
 const OpportunityStage = enumType('OpportunityStage', [
-  'new', 'qualified', 'proposal', 'negotiation',
-  'closed_won', 'closed_lost', 'stale_review',
+  'DISCOVERY',
+  'QUALIFICATION',
+  'DEMO',
+  'PROPOSAL',
+  'NEGOTIATION',
+  'CLOSED_WON',
+  'CLOSED_LOST',
+  'stale_review',
 ]);
 
 const LeadStatus = enumType('LeadStatus', [
-  'new', 'working', 'qualified', 'disqualified',
+  'new',
+  'working',
+  'qualified',
+  'disqualified',
 ]);
 
 const Opportunity = objectType('Opportunity', {
   name: string().required().indexed(),
   amount: number().optional(),
-  stage: OpportunityStage.default('new')
+  value: number().optional(),
+  stage: OpportunityStage.default('NEGOTIATION')
     .mutableBy(['Opportunity.moveStage', 'Opportunity.markStale']),
   ownerEmail: string().optional()
     .mutableBy(['Opportunity.assignOwner']),
+  lossReason: string().optional()
+    .mutableBy(['Opportunity.moveStage']),
   stageReason: string().optional()
-    .mutableBy(['Opportunity.moveStage', 'Opportunity.markStale']),
+    .mutableBy(['Opportunity.markStale']),
 });
 
 const Lead = objectType('Lead', {
   email: string().required().indexed(),
   status: LeadStatus.default('new')
     .mutableBy(['Lead.qualify', 'Lead.disqualify']),
-  disqualificationReason: string().optional()
-    .mutableBy(['Lead.disqualify']),
 });
 
 const Account = objectType('Account', {
@@ -46,7 +56,11 @@ const Account = objectType('Account', {
 
 const OpportunityToAccount = link('Opportunity', 'Account')
   .cardinality('many_to_one')
-  .label('belongs_to_account');
+  .label('for_account');
+
+const OpportunityToLead = link('Opportunity', 'Lead')
+  .cardinality('many_to_one')
+  .label('from_lead');
 ```
 
 ## Actions and policy
@@ -65,25 +79,119 @@ const OpportunityToAccount = link('Opportunity', 'Account')
   "forbidDelete": true,
   "maxObjectsTouched": 20,
   "allowedActions": [
-    "Opportunity.moveStage", "Opportunity.assignOwner", "Opportunity.markStale",
-    "Lead.qualify", "Lead.disqualify"
+    "Opportunity.moveStage",
+    "Opportunity.assignOwner",
+    "Opportunity.markStale",
+    "Lead.qualify",
+    "Lead.disqualify"
   ]
 }
 ```
 
 - High-value opportunities require a manager role.
-- `closed_won` and `closed_lost` are restricted transitions.
+- `CLOSED_WON` and `CLOSED_LOST` are restricted transitions.
 - Every disqualification requires a reason.
 
 ## Run this demo
 
-This use case follows the same safety loop as [contract approval](./contract-approval.md#try-it-now). The distinguishing feature is multi-object awareness: `maxObjectsTouched: 20` allows batch reviews, but each plan still shows the exact diff per record.
-
 ```bash
 dataforge init my-crm-demo --template contract-review
 cd my-crm-demo && dataforge dev
-# Adapt the schema, then: query -> describe -> dry-run -> inspect -> apply
 ```
+
+Discover the live CRM surface:
+
+```bash
+dataforge whoami --format json
+dataforge schema search opportunity --types ObjectType,Action --format json
+dataforge schema search lead --types ObjectType,Action --format json
+dataforge query opportunity --format json
+dataforge graph neighbors <opportunityId> --format json
+dataforge actions describe Opportunity.moveStage --format json
+dataforge actions describe Opportunity.assignOwner --format json
+dataforge actions describe Opportunity.markStale --format json
+dataforge actions describe Lead.qualify --format json
+dataforge actions describe Lead.disqualify --format json
+```
+
+Create input files for the mutations you want to run:
+
+```bash
+cat > crm-move-stage-input.json <<'JSON'
+{
+  "stage": "CLOSED_LOST",
+  "lossReason": "NO_DECISION",
+  "reason": "No activity for 120 days"
+}
+JSON
+
+cat > crm-assign-owner-input.json <<'JSON'
+{
+  "ownerEmail": "new.owner@company.com",
+  "reason": "Territory change"
+}
+JSON
+
+cat > crm-mark-stale-input.json <<'JSON'
+{
+  "reason": "No activity in 90 days"
+}
+JSON
+
+cat > crm-qualify-lead-input.json <<'JSON'
+{
+  "reason": "Meeting confirmed, budget available"
+}
+JSON
+
+cat > crm-disqualify-lead-input.json <<'JSON'
+{
+  "reason": "Low fit and no buying intent after qualification review"
+}
+JSON
+```
+
+Run the governed safety loop:
+
+```bash
+dataforge actions run Opportunity.moveStage <opportunityId> \
+  --input-file crm-move-stage-input.json \
+  --dry-run --format json
+
+dataforge plan inspect <planId> --plan-format markdown
+
+dataforge plan verify <planId> \
+  --risk-acknowledged \
+  --confirmed \
+  --format json
+
+dataforge actions run Opportunity.moveStage <opportunityId> \
+  --input-file crm-move-stage-input.json \
+  --apply-plan <planId> \
+  --plan-hash <planHash> \
+  --idempotency-key crm-move-stage-<opportunityId> \
+  --format json
+
+dataforge instance get <opportunityId> --format json
+```
+
+Use the same dry-run, inspect, verify, apply, and final `instance get` loop for `Opportunity.assignOwner`, `Opportunity.markStale`, `Lead.qualify`, and `Lead.disqualify`. The staging validation currently observes these final fields:
+
+| Action | Required starting state | Observed final fields |
+|--------|-------------------------|-----------------------|
+| `Opportunity.moveStage` | `stage=NEGOTIATION` | `stage=CLOSED_LOST`, `lossReason=NO_DECISION` |
+| `Opportunity.assignOwner` | any opportunity | `ownerEmail=new.owner@company.com` |
+| `Opportunity.markStale` | `stage != stale_review` | `stage=stale_review`, `stageReason=<input.reason>` |
+| `Lead.qualify` | `status=new` or `status=working` | `status=qualified` |
+| `Lead.disqualify` | `status=new` or `status=working` | `status=disqualified` |
+
+## Local validation
+
+```bash
+node tests/scripts/public-cli-crm-pipeline-check.cjs
+```
+
+Latest staging result: `PASS=41 FAIL=0 GAP=0` on backend image `staging-bea33ac2fdd9`.
 
 ## Before / After
 
@@ -93,4 +201,4 @@ cd my-crm-demo && dataforge dev
 
 ## Scope note
 
-Ontologie acts as the governed operational twin for CRM state. Direct Salesforce or HubSpot writes require `external_commit` mode (future).
+Ontologie acts as the governed operational twin for CRM state. Direct Salesforce or HubSpot writes require `external_commit` mode, which is a future capability.

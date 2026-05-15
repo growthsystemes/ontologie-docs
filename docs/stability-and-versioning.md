@@ -69,7 +69,7 @@ Declared in the schema, visible in dry-run output, signed in plan artifacts, but
 - `external_commit` connector-based apply (post-V1.1, requires explicit policy opt-in)
 - Handoff CLI commands (`plan handoff`)
 - Source-of-truth runtime validation
-- Governance add-on (RBAC, approval routing, configurable audit retention)
+- Governance add-on (RBAC, approval routing, configurable audit retention) -- available as add-on, runtime enforcement V1.1
 
 ---
 

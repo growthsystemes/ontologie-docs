@@ -29,9 +29,7 @@ Cloud Runtime self-serve uses prepaid usage credits.
 - Governance is a separate recurring subscription line item.
 - Auto-recharge is opt-in and only buys another prepaid DFU pack within limits you define.
 
-Cloud Runtime self-serve uses prepaid usage credits. Stripe Meter Events are not used for self-serve Runtime billing decisions; they remain an accounting/export integration behind the internal DFU ledger.
-
-Staging is configured in Stripe test mode. Production Stripe remains disabled until live products/prices are created and reviewed.
+Staging is configured in Stripe test mode. Production self-serve billing is enabled for prepaid DFU packs only.
 
 ### Commercialisation gate
 
@@ -39,8 +37,10 @@ Runtime billing is considered production-ready only when all of these are true:
 
 - Public BaaS signed-plan use cases pass on staging with no hidden 429 fallback.
 - DFU pack checkout, ledger credit, wallet enforcement, and cleanup fixtures pass on staging.
-- Live Stripe DFU pack price IDs and webhook secret are created, reviewed, and rotated if needed.
+- Live Stripe DFU pack price IDs and webhook secret are created, reviewed, rotated if needed, and verified through the Stripe API.
 - Production Stripe enablement is explicitly approved after the BaaS, billing, and ops/security gates are green.
+
+Current production billing status: GO since 2026-05-13 for self-serve prepaid DFU packs. Governance and runtime postpaid metering remain out of scope.
 
 The broad API cloud suite is tracked separately. A broad API failure does not change the prepaid Runtime contract above unless it affects signed plans, DFU checkout, wallet enforcement, or proof/audit.
 

@@ -28,6 +28,11 @@ dataforge --version
 ## 2. Create a project
 
 ```bash
+# Option A — scaffolder (recommended)
+npx create-ontologie-app my-project --template contract-review
+cd my-project
+
+# Option B — CLI init
 dataforge init --template contract-review
 cd contract-review
 ```
@@ -147,7 +152,7 @@ dataforge actions run Contract.approve con_001 \
   --dry-run --format json
 
 # 5. Inspect
-dataforge plan inspect <planId> --format markdown
+dataforge plan inspect <planId> --plan-format markdown
 
 # 6. Apply
 dataforge actions run Contract.approve con_001 \
@@ -170,6 +175,20 @@ dataforge agent doctor --format json
 ```
 
 This produces `AGENTS.md`, `CLAUDE.md`, and `.claude/skills/dataforge/SKILL.md` -- ready for Claude Code, Codex, or any MCP client.
+
+---
+
+## What you just proved
+
+By completing this quickstart, you demonstrated that an AI agent can:
+
+1. **Discover** a typed business model without documentation drift
+2. **Query** live operational state without database access
+3. **Propose** a change as a signed, inspectable plan artifact
+4. **Apply** only verified plans through governed paths
+5. **Prove** what happened with a cryptographic audit trail
+
+This is the signed-plan safety loop. Read the full annotated story in [The Wow Moment](docs/wow-moment.md).
 
 ---
 

@@ -43,7 +43,7 @@ dataforge schema describe --format json
 dataforge query Contract --filter-json '{"status":{"eq":"pending_review"}}' --format json
 dataforge actions describe Contract.approve --format json
 dataforge actions run Contract.approve con_001 --input-json '{"comment":"Budget verified"}' --dry-run --format json
-dataforge plan inspect <planId> --format markdown
+dataforge plan inspect <planId> --plan-format markdown
 dataforge actions run Contract.approve con_001 --apply-plan <planId> --plan-hash <hash> --idempotency-key approve-con-001-001 --format json
 
 # 4. Verify the change

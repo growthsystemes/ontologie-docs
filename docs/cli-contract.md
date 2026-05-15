@@ -91,7 +91,7 @@ dataforge schema describe --format json
 dataforge query Contract --filter-json '{"status":{"eq":"pending_review"}}' --limit 20 --format json
 dataforge actions run Contract.approve con_001 --dry-run --format json
 dataforge actions run Contract.approve con_001 --apply-plan plan_xyz --plan-hash <hash> --idempotency-key key_001 --format json
-dataforge plan inspect plan_xyz --format markdown
+dataforge plan inspect plan_xyz --plan-format markdown
 dataforge graph neighbors con_001 --format json
 dataforge search "Acme" --format json
 dataforge import data.csv --type Contract --dry-run --format json

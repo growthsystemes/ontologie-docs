@@ -77,6 +77,12 @@ const graph = await client.graph.traverse('con_001', {
   maxDepth: 2,
   limit: 50,
 });
+
+// Graph-constrained search
+const graphMatches = await client.graph.search('contracts pending legal review', {
+  nodeTypes: ['Contract'],
+  limit: 10,
+});
 ```
 
 ---
@@ -84,15 +90,15 @@ const graph = await client.graph.traverse('con_001', {
 ## Search
 
 ```typescript
-// Keyword search
-const results = await client.search('Acme Corp', { limit: 10 });
-
-// Semantic search (Preview, Cloud Runtime+)
-const semantic = await client.search('contracts pending legal review', {
-  mode: 'semantic',
+// Global discovery search
+const results = await client.search.global({
+  query: 'Acme Corp',
   limit: 10,
 });
 ```
+
+For graph-scoped search, use `client.graph.search()`. Its SDK route is
+`POST /api/v1/graph/constrained-search`.
 
 ---
 
@@ -199,20 +205,21 @@ do {
 
 ```typescript
 const context = await client.context.pack({
-  objective: 'review pending contracts',
-  include: ['schema', 'actions', 'limits'],
-  budgetTokens: 4000,
+  query: 'review pending contracts',
+  include: ['ontology', 'graph'],
+  budget: 4000,
 });
-// Returns markdown string suitable for LLM context
+console.log(context.sections);
 ```
 
 ---
 
 ## Capabilities
 
-```typescript
-const caps = await client.capabilities.export();
-// Machine-readable manifest: object types, actions, links, limits, policy
+Capabilities are currently CLI-first in the stable contract:
+
+```bash
+dataforge capabilities export --format json
 ```
 
 ---
@@ -222,25 +229,24 @@ const caps = await client.capabilities.export();
 ```typescript
 const usage = await client.usage.me();
 console.log(usage.period);           // current billing period
-console.log(usage.consumed);         // DFU used
-console.log(usage.budget);           // DFU budget
-console.log(usage.remaining);        // DFU remaining
+console.log(usage.usage.costUnitsUsed);
+console.log(usage.usage.costUnitsLimit);
+console.log(usage.usage.costUnitsRemaining);
+
+const forecast = await client.usage.forecast();
+console.log(forecast.projected);
 ```
 
 ---
 
 ## Import
 
-```typescript
-// Dry-run import
-const preview = await client.import.dryRun('Contract', './contracts.csv');
-console.log(preview.validRows, preview.errors);
+Import is CLI-first in the stable contract. Use the generated plan id and
+idempotency key exactly as with actions:
 
-// Apply import
-const result = await client.import.apply('Contract', './contracts.csv', {
-  planId: preview.planId,
-  idempotencyKey: 'import-contracts-001',
-});
+```bash
+dataforge import Contract ./contracts.csv --dry-run --format json
+dataforge import Contract ./contracts.csv --apply-plan <planId> --plan-hash <hash> --idempotency-key import-contracts-001
 ```
 
 ---
@@ -293,7 +299,7 @@ function ContractList() {
 
 | Package | Purpose | Stability |
 |---------|---------|-----------|
-| `@ontologie/sdk-client` | Core client (queries, actions, plans) | Stable |
+| `@ontologie/sdk-client` | Core client (queries, graph, search, context, usage, actions, plans) | Stable |
 | `@ontologie/schema` | Schema DSL (objectType, action, link, enum) | Stable |
 | `@ontologie/react` | React hooks | Platform |
 | `@ontologie/oauth` | OAuth PKCE for browsers | Platform |

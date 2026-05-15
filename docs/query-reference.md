@@ -159,7 +159,10 @@ dataforge search "Acme" --limit 5 --format json
 ```
 
 ```typescript
-const results = await client.search('Acme consulting', { limit: 5 });
+const results = await client.search.global({
+  query: 'Acme consulting',
+  limit: 5,
+});
 ```
 
 Semantic search (Preview, Cloud Runtime+):
@@ -187,17 +190,43 @@ const neighbors = await client.graph.neighbors('con_001', {
 });
 ```
 
-### Traverse (Preview)
+### Traverse (Stable)
 
 ```bash
 dataforge graph traverse con_001 --depth 2 --format json
 ```
 
-### Shortest path (Preview)
+```typescript
+const graph = await client.graph.traverse('con_001', {
+  direction: 'outbound',
+  maxDepth: 2,
+  limit: 50,
+});
+```
+
+### Shortest path (Stable)
 
 ```bash
 dataforge graph path con_001 cli_042 --format json
 ```
+
+```typescript
+const path = await client.graph.shortestPath('con_001', 'cli_042', {
+  maxHops: 5,
+});
+```
+
+### Graph-constrained search (Stable)
+
+```typescript
+const matches = await client.graph.search('contracts pending legal review', {
+  nodeTypes: ['Contract'],
+  limit: 10,
+});
+```
+
+The SDK source of truth route for `client.graph.search()` is
+`POST /api/v1/graph/constrained-search`.
 
 ---
 
